@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project>
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAWEK/qSAknUK53tsx0rp+FwAAAAACAAAAAAAQZgAAAAEAACAAAABBI+10AanKyzWI1zeZRRjd89oRzbaTSA+FLGrLeBRXfwAAAAAOgAAAAAIAACAAAABJydgot+TXW+3hucdarCNqQsEt2Tcd3eMUFSjS9zqMQ4AAAABw6UqPfzfu5RyQ/6anCuP1k8/xHvMwmIXv0YbAHFgEtU/6MCtMZ5CfsRWq27+oOfOV2At90NW1hETKw/BWNaIy4m4vuwJwf1mNvTJwQDM7+tR1NzhPhvHyJLQfke99TezRIL1nPXzR81yqQzfXW5ICi66iWOLCZhlTMkq7cSWVKkAAAAB8gcUJeB1bO5I5zL9Uk0rFXosAzAMJJiYro3OhawP6NAxAD8kLV6vY4mWqI1uamyWVes66rX5twStCuT3GqJ//</EncryptedPassword>
+    <History>True|2023-01-26T04:21:08.2191351Z;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="DBConnection">
+      <Value>Data Source=tcp:dawginhimserver.database.windows.net,1433%3bInitial Catalog=ECommerceShopDb%3bUser Id=admin-sql%40dawginhimserver%3bPassword=Pa%24%240123zodd</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+</Project>
