@@ -1,0 +1,19 @@
+
+
+export const SET_LOADING = "SET_LOADING";
+
+export const CART_TOTAL="CART_TOTAL";
+export const SET_USER="SET_USER";
+export const LOG_OUT_USER="LOG_OUT_USER";
+export const SET_CUSTOMER_CART="SET_CUSTOMER_CART";
+export const EMPTY_CUSTOMER_CART="EMPTY_CUSTOMER_CART";
+export const TOTAL_CART_ITEMS="TOTAL_CART_ITEMS";
+export const SET_CUSTOMER_WISHLIST="SET_CUSTOMER_WISHLIST";
+export const SET_WEBSITE_LOGO="SET_WEBSITE_LOGO";
+
+
+
+
+
+
+
