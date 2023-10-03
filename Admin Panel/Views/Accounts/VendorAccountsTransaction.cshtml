@@ -1,0 +1,1095 @@
+﻿@model Entities.MainModels.AccountsModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+}
+
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+    List<SelectListItem> TransTypeList = new List<SelectListItem>();
+    TransTypeList.Add(new SelectListItem { Value = "Credit", Text = "Deposited Amount in this Account" });
+    TransTypeList.Add(new SelectListItem { Value = "Debit", Text = "Withdraw Amount from this Account" });
+
+    Dictionary<string, string>? TransTypeListDic = new Dictionary<string, string>();
+    TransTypeListDic = TransTypeList.ToDictionary(v => v.Value, t => t.Text);
+
+
+}
+
+<!--Page specific java script-->
+<script src="~/content/themeContent/global_assets/js/demo_pages/form_checkboxes_radios.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/plugins/purify.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/plugins/sortable.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/fileinput.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/demo_pages/uploader_bootstrap.js"></script>
+<!--/Page specific java script-->
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                EntityId = Model?.PageBasicInfoObj != null ? Model.PageBasicInfoObj.EntityId : 0,
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = true,
+                ShowActionsButton = true,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = true,
+                ShowGoBackButton = true,
+                DataExportUrl = Url.Action("VendorAccountsTransaction", "Accounts", new { langCode = Model?.PageBasicInfoObj?.langCode })
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @{
+                SearchFilterModel filter = new SearchFilterModel();
+
+                #region basic settings
+                filter.SearchJSFunctionName = "SearchRecord();";
+                filter.SearchButtonType = "button";
+                filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                filter.SearchURL = Url.Action("VendorAccountsTransaction", "Accounts", new { langCode = Model?.PageBasicInfoObj?.langCode });
+                #endregion
+
+                string VednorFirstName =  Model?.UserObj?.FirstName ?? "";
+                string VednorLastName =  Model?.UserObj?.LastName ?? "";
+                string VendorFullName = VednorFirstName + " " + VednorLastName;
+
+                filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+            new HtmlFormFieldsEntity(){ FieldID = "VendorFullName", FieldName="VendorFullName",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Vendor Name", LabelText="Vendor Name", DefaultValue = VendorFullName, IsReadOnly = true },
+            new HtmlFormFieldsEntity(){ FieldID = "FromDate", FieldName="FromDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="From Processing Date", LabelText="From Processing Date", ToolTipText="Pick a processing date from where you want to search record", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ToDate", FieldName="ToDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="To Processing Date", LabelText="To Processing Date", ToolTipText="Pick a processing date from where you want to search record", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "VendorId", FieldName="VendorId",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden, DefaultValue =ViewBag.VendorId!=null ? Convert.ToString(ViewBag.VendorId) : "0"},
+
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/Accounts/PartialViews/_VendorAccountsTransaction.cshtml", Model)
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+
+</div>
+
+
+
+
+<!-- transaction insert modal -->
+<div id="AddNewDataModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-full">
+        <div class="modal-content">
+            <div class="modal-header site-bg-modal-header">
+                <h5 class="modal-title" id="add_transaction_title">Transaction Detail</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <form method="post" class="form-validate-jquery" asp-area="" asp-controller="" asp-action="" id="data-insert-form" enctype="multipart/form-data">
+
+                <div class="modal-body">
+
+                    <div>
+                        <ul class="nav nav-tabs nav-tabs-highlight mb-0">
+                            <li class="nav-item"><a href="#discount-info-tab" id="discount-info-anchor" class="nav-link active" data-toggle="tab"><i class="icon-user mr-2"></i> <span id="add_trans_detail_tab">Transaction Detail</span> </a></li>
+                            <li class="nav-item"><a href="#bordered-tab5" class="nav-link" data-toggle="tab"><i class="icon-file-picture mr-2"></i><span id="add_attach_tab">Attachments</span> </a></li>
+
+                        </ul>
+
+                        <div class="tab-content card card-body border-top-0 rounded-top-0 mb-0">
+                            <div class="tab-pane fade show active" id="discount-info-tab">
+                                <fieldset class="mb-3">
+
+                                    <div class="form-group row">
+
+
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                               
+                                                <span id="add_lbl_transTitle"> Transaction Title</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="Enter here the title for your transaction. It could be any title"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <input type="text" class="form-control" id="TransTitle" name="TransTitle" placeholder="" required>
+
+                                        </div>
+
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                               
+                                                <span id="add_lbl_transType">  Transaction Type</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select transaction type like you deposited amount in this vendor account or amount withdrawn"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <select id="TransType" name="TransType" class="form-control" onchange="GetSelectedDiscountTypeData()" required>
+                                                @{
+                                                    if (TransTypeListDic != null)
+                                                    {
+                                                        foreach (var item in TransTypeListDic)
+                                                        {
+                                                            if (item.Key == "Credit")
+                                                            {
+
+                                                                            <option value="@item.Key" selected>@item.Value</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                            <option value="@item.Key">@item.Value</option>
+                                                            }
+
+
+                                                        }
+                                                    }
+                                                }
+
+
+                                            </select>
+                                        </div>
+
+
+                                    </div>
+
+                                    <div class="form-group row">
+
+
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                                
+                                                <span id="add_lbl_transBankAccount"> Bank Account</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select bank accout of this particular vendor from the dropdown"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <select id="BankAccountId" name="BankAccountId" class="form-control" required>
+                                                <option value="">Select a Bank Account...</option>
+
+                                                @{
+                                                    if (Model != null && Model.BankAccountList != null && Model.BankAccountList.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.BankAccountList)
+                                                        {
+
+                                                                        <option value="@item.BankAccountId">@(item.BankBranchName + " " + "(" + item.AccountNo + ")")</option>
+                                                        }
+                                                    }
+                                                }
+
+                                            </select>
+
+                                        </div>
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                                
+                                                <span id="add_lbl_transEvent">Event</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="You can set up different events for any transaction in the events table. Here select the appropriate event type for this transaction"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <select id="EventId" name="EventId" class="form-control" required>
+                                                <option value="">Select a Event Name...</option>
+                                                @{
+                                                    if (Model != null && Model.BankTransEventsList != null && Model.BankTransEventsList.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.BankTransEventsList)
+                                                        {
+
+                                                                        <option value="@item.EventId">@item.EventName</option>
+                                                        }
+                                                    }
+                                                }
+
+                                            </select>
+
+                                        </div>
+
+
+                                    </div>
+
+
+
+                                    <div class="form-group row">
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                                
+                                                <span id="add_lbl_transAmount">Amount</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="Enter here ther total amount that transferred to the account"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <input type="number" min="0" max="1000000" class="form-control" id="TransAmount" name="TransAmount" placeholder="" required>
+
+                                        </div>
+
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                               
+                                                <span id="add_lbl_transPaymentMethod"> Payment Method</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="There are different payments method like check, online transfer, wire transfer. You have to select the right payment method for this transaction"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <select id="PaymentMethodId" name="PaymentMethodId" class="form-control" required>
+                                                <option value="">Select a Discount Value...</option>
+                                                @{
+                                                    if (Model != null && Model.PaymentMethodsList != null && Model.PaymentMethodsList.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.PaymentMethodsList)
+                                                        {
+
+                                                                        <option value="@item.PaymentMethodId">@item.PaymentMethodName</option>
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+
+                                        </div>
+
+
+
+
+
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                              
+                                                <span id="add_lbl_transProcDte">  Processing Date</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="The processing date of this transaction"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+
+                                            <div class="input-group">
+
+                                                <input type="datetime-local" id="ProcessingDate" name="ProcessingDate" class="form-control" placeholder="Start date &hellip;">
+                                            </div>
+
+                                        </div>
+
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                                
+                                                <span id="add_lbl_transDescription">Description</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="Any description"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <input type="text" class="form-control" id="Description" name="Description" placeholder="" required>
+
+                                        </div>
+
+
+                                    </div>
+
+
+
+
+
+
+                                </fieldset>
+
+
+
+
+
+                            </div>
+                            <div class="tab-pane fade" id="bordered-tab5">
+                                <fieldset class="mb-3">
+
+
+                                    <div class="form-group row">
+                                        <label class="col-form-label col-lg-3">
+                                          
+                                            <span id="add_lbl_transAttachType">  Attachments (.png, jpeg, gif etc)</span>
+                                            <span class="text-danger">*</span>
+                                            <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select any category from the dropdown"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                        </label>
+                                        <div class="col-lg-9">
+                                            <input type="file" id="AccountTransAttachementFile" name="AccountTransAttachementFile" class="file-input" multiple="multiple" data-show-upload="false" data-show-caption="true" data-show-preview="true" data-fouc>
+                                        </div>
+                                    </div>
+
+
+                                </fieldset>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline bg-teal-400 text-teal-400 border-teal-400 border-2" data-dismiss="modal"><span id="add_form_close_btn">Close</span></button>
+                    @*  <button type="button" class="btn bg-primary">Save changes</button>*@
+                    <button type="submit" onclick="SaveFormRecord();" class="btn btn-primary ml-3"><span id="add_form_save_btn">Save</span> <i class="icon-paperplane ml-2"></i></button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+<!-- /transaction insert modal -->
+<!-- transaction update modal -->
+<div id="EditDataModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-full">
+        <div class="modal-content">
+            <div class="modal-header site-bg-modal-header">
+                <h5 class="modal-title" id="update_transaction_title">Transaction Detail</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <form method="post" class="form-validate-jquery" asp-area="" asp-controller="" asp-action="" id="data-edit-form" enctype="multipart/form-data">
+
+                <div class="modal-body">
+
+                    <div>
+                        <ul class="nav nav-tabs nav-tabs-highlight mb-0">
+                            <li class="nav-item"><a href="#discount-info-tab-edit" id="discount-info-anchor-edit" class="nav-link active" data-toggle="tab"><i class="icon-user mr-2"></i><span id="update_trans_detail_tab">Transaction Detail</span> </a></li>
+                            <li class="nav-item"><a href="#bordered-tab5-edit" class="nav-link" data-toggle="tab"><i class="icon-file-picture mr-2"></i><span id="update_attach_tab">Attachments</span> </a></li>
+
+                        </ul>
+
+                        <div class="tab-content card card-body border-top-0 rounded-top-0 mb-0">
+                            <div class="tab-pane fade show active" id="discount-info-tab-edit">
+                                <fieldset class="mb-3">
+
+                                    <div class="form-group row">
+
+
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                                
+                                                <span id="update_lbl_transTitle"> Transaction Title</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="Enter here the title for your transaction. It could be any title"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <input type="text" class="form-control" id="TransTitleUpdate" name="TransTitleUpdate" placeholder="" value="" required>
+                                            <input type="hidden" class="form-control" id="TransIdUpdate" name="TransIdUpdate" value="" required>
+
+                                        </div>
+
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                                <span id="upate_lbl_transType">  Transaction Type</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select transaction type like you deposited amount in this vendor account or amount withdrawn"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <select id="TransTypeUpdate" name="TransTypeUpdate" class="form-control" onchange="GetSelectedDiscountTypeData()" required>
+
+
+                                                @{
+                                                    if (TransTypeListDic != null)
+                                                    {
+                                                        foreach (var item in TransTypeListDic)
+                                                        {
+                                                            if (item.Key == "Credit")
+                                                            {
+
+                                                                            <option value="@item.Key" selected>@item.Value</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                            <option value="@item.Key">@item.Value</option>
+                                                            }
+
+                                                        }
+                                                    }
+                                                }
+
+
+                                            </select>
+                                        </div>
+
+
+                                    </div>
+
+                                    <div class="form-group row">
+
+
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                                <span id="upate_lbl_transBankAccount"> Bank Account</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select bank accout of this particular vendor from the dropdown"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <select id="BankAccountIdUpdate" name="BankAccountIdUpdate" class="form-control" required>
+                                                <option value="">Select a Bank Account...</option>
+
+                                                @{
+                                                    if (Model != null && Model.BankAccountList != null && Model.BankAccountList.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.BankAccountList)
+                                                        {
+
+                                                                        <option value="@item.BankAccountId">@(item.BankBranchName + " " + "(" + item.AccountNo + ")")</option>
+
+
+                                                        }
+                                                    }
+                                                }
+
+                                            </select>
+
+                                        </div>
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                                <span id="upate_lbl_transEvent">Event</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="You can set up different events for any transaction in the events table. Here select the appropriate event type for this transaction"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <select id="EventIdUpdate" name="EventIdUpdate" class="form-control" required>
+                                                <option value="">Select a Event Name...</option>
+                                                @{
+                                                    if (Model != null && Model.BankTransEventsList != null && Model.BankTransEventsList.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.BankTransEventsList)
+                                                        {
+
+                                                                        <option value="@item.EventId">@item.EventName</option>
+
+                                                        }
+                                                    }
+                                                }
+
+                                            </select>
+
+                                        </div>
+
+
+                                    </div>
+
+
+
+                                    <div class="form-group row">
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                                
+                                                <span id="upate_lbl_transAmount">Amount</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="Enter here ther total amount that transferred to the account"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <input type="number" min="0" max="1000000" class="form-control" id="TransAmountUpdate" name="TransAmountUpdate" value="0" placeholder="" required>
+
+                                        </div>
+
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                                <span id="upate_lbl_transPaymentMethod"> Payment Method</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="There are different payments method like check, online transfer, wire transfer. You have to select the right payment method for this transaction"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <select id="PaymentMethodIdUpdate" name="PaymentMethodIdUpdate" class="form-control" required>
+                                                <option value="">Select a Discount Value...</option>
+                                                @{
+                                                    if (Model != null && Model.PaymentMethodsList != null && Model.PaymentMethodsList.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.PaymentMethodsList)
+                                                        {
+
+                                                                        <option value="@item.PaymentMethodId">@item.PaymentMethodName</option>
+
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+
+                                        </div>
+
+
+
+
+
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+                                                <span id="upate_lbl_transProcDte">  Processing Date</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="The processing date of this transaction"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+
+                                            <div class="input-group">
+                                                @{
+                                                    string ProcessingDate = Model != null && Model.AccountTransactionsDetailObj != null ?
+                                                    Model.AccountTransactionsDetailObj.ProcessingDate.ToString("yyyy-MM-dd HH:mm:ss").Replace(' ', 'T') : "";
+                                                }
+                                                <input type="datetime-local" id="ProcessingDateUpdate" name="ProcessingDateUpdate" class="form-control" value="@ProcessingDate" placeholder="Start date &hellip;">
+                                            </div>
+
+                                        </div>
+
+                                        <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                            <label>
+
+                                                <span id="upate_lbl_description">  Description</span>
+                                                <span class="text-danger">*</span>
+                                                <span data-popup="tooltip" title="" data-placement="right" data-original-title="Any description"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                            </label>
+                                            <input type="text" class="form-control" id="DescriptionUpdate" name="DescriptionUpdate" value="" placeholder="" required>
+
+                                        </div>
+
+
+                                    </div>
+
+
+                                </fieldset>
+
+
+                            </div>
+                            <div class="tab-pane fade" id="bordered-tab5-edit">
+                                <fieldset class="mb-3">
+
+
+                                    <div class="form-group row">
+                                        <label class="col-form-label col-lg-3">
+                                           
+                                            <span id="upate_lbl_attachType">   Attachments (.png, jpeg, gif etc)</span>
+                                            <span class="text-danger">*</span>
+                                            <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select any category from the dropdown"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                        </label>
+                                        <div class="col-lg-9">
+                                            <input type="file" id="AccountTransAttachementFileUpdate" name="AccountTransAttachementFileUpdate" class="file-input" multiple="multiple" data-show-upload="false" data-show-caption="true" data-show-preview="true" data-fouc>
+                                        </div>
+                                    </div>
+
+                                    <div class="row" id="transactions_attachment_div">
+
+                                      
+                                    </div>
+
+
+
+
+                                </fieldset>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline bg-teal-400 text-teal-400 border-teal-400 border-2" data-dismiss="modal"><span id="update_form_close_btn">Close</span></button>
+                    @*  <button type="button" class="btn bg-primary">Save changes</button>*@
+                    <button type="submit" onclick="UpdateFormRecord();" class="btn btn-primary ml-3"><span id="update_form_update_btn">Update</span> <i class="icon-paperplane ml-2"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- /transaction update modal -->
+@section  Scripts{
+
+    <script>
+
+
+        function SaveFormRecord() {
+
+
+            // ✅ On formt submit,fire event prevent
+            $("#data-insert-form").submit(function (e) {
+                e.preventDefault();
+            });
+
+            // ✅ Check if form is valid
+            if (!$("#data-insert-form").valid()) {
+                event.preventDefault();
+                showSuccessErrorMsg("error", "Error", "Please fill all required fields!");
+                return false;
+            }
+
+            // ✅ Check the validation of form in a new additional way
+            if (!validateInsertForm("data-insert-form")) {
+                event.preventDefault();
+                showSuccessErrorMsg("error", "Error", "Please fill all required fields!");
+                return false;
+            }
+
+
+
+            //-- #region All fields values getting area starts here
+            let VendorId = $("#VendorId").val();
+            let TransTitle = $("#TransTitle").val();
+            let TransType = $("#TransType").val();
+            let BankAccountId = $("#BankAccountId").val();
+            let EventId = $("#EventId").val();
+            let TransAmount = $("#TransAmount").val();
+            let PaymentMethodId = $("#PaymentMethodId").val();
+            let ProcessingDate = $("#ProcessingDate").val();
+            let Description = $("#Description").val();
+
+            var AccountTransAttachementFile = $("#AccountTransAttachementFile").get(0).files;
+
+
+            if (!checkIfStringIsEmtpy(VendorId)) {
+                showSuccessErrorMsg("error", "Error", "Vendor Id is null");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(TransTitle)) {
+                showSuccessErrorMsg("error", "Error", "Trans Title  is null");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(TransType)) {
+                showSuccessErrorMsg("error", "Error", "TransType is null");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(BankAccountId)) {
+                showSuccessErrorMsg("error", "Error", "Bank Account Id is null");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(TransAmount)) {
+                showSuccessErrorMsg("error", "Error", "Trans Amount is null");
+                return false;
+            }
+
+            if (TransAmount < 1 || TransAmount > 1000000) {
+                showSuccessErrorMsg("error", "Error", "Enter valid transaction amount");
+                return false;
+            }
+
+            //-- #region Form initialization area starts here
+            var fileData = new FormData();
+
+            for (var i = 0; i < AccountTransAttachementFile.length; i++) {
+                fileData.append("AccountTransAttachementFile", AccountTransAttachementFile[i]);
+            }
+            fileData.append("VendorId", VendorId);
+            fileData.append("TransTitle", TransTitle);
+            fileData.append("TransType", TransType);
+            fileData.append("BankAccountId", BankAccountId);
+            fileData.append("EventId", EventId);
+            fileData.append("TransAmount", TransAmount);
+            fileData.append("PaymentMethodId", PaymentMethodId);
+            fileData.append("ProcessingDate", ProcessingDate);
+            fileData.append("Description", Description);
+            fileData.append("Description", Description);
+
+            //-- #endRegion Form initialization area ends here
+
+
+
+            let saveUrl = "@Url.Action("CreateVendorAccountTransaction", "Accounts", new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: fileData,
+                success: function (data) {
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", data.message);
+
+                        setTimeout(function () {
+                            window.location.href = "@Url.Action("VendorAccountsTransaction","Accounts" , new { langCode = Model?.PageBasicInfoObj?.langCode,  VendorId = ViewBag.VendorId!=null ? Convert.ToString(ViewBag.VendorId) : "0"})";
+                        }, 1000);
+
+                    }
+                    else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showSuccessErrorMsg("error", "Error", "Something went wrong. Please try again");
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            });
+
+        }
+
+        function showEditModal(TransId) {
+            getTransactionEditFormData(TransId);
+            getTransactionEditFormAttachments(TransId);
+        }
+
+        function getTransactionEditFormData(TransId){
+                let formDateTrans = {
+                TransId: TransId
+            }
+
+            let getUrl = "@Url.Action("GetAccountTransEditFormDataById", "Accounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+            $.ajax({
+                type: "GET",
+                url: getUrl,
+                data: formDateTrans,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function (data) {
+
+                    debugger
+
+                    if (data != undefined && data != null) {
+
+                        document.getElementById("TransTitleUpdate").value = data.transTitle ?? "";
+                        $("#TransIdUpdate").val(data.transId ?? 0);
+                        $("#TransTypeUpdate").val(data.transType ?? "Credit");
+                        $("#BankAccountIdUpdate").val(data.bankAccountId ?? 0);
+                        $("#EventIdUpdate").val(data.eventId ?? 0);
+                        $("#TransAmountUpdate").val(data.transAmount ?? 0);
+                        $("#PaymentMethodIdUpdate").val(data.paymentMethodId ?? 0);
+                        $("#ProcessingDateUpdate").val(data.processingDate ?? "");
+                        // $("#descriptionUpdate").val(data.description ?? "");
+                        document.getElementById("DescriptionUpdate").value = data.description ?? "";
+
+                        setTimeout(function () {
+                            $('#EditDataModal').modal('show');
+                        }, 200);
+                    } else {
+                        showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                    }
+
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+        }
+
+         function getTransactionEditFormAttachments(TransId){
+                 let formDateTrans = {
+                TransId: TransId
+            }
+
+            let getUrl = "@Url.Action("GetAccountTransEditFormAttachmentsId", "Accounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+            $.ajax({
+                type: "GET",
+                url: getUrl,
+                data: formDateTrans,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function (data) {
+
+                    if (data != undefined && data != null) {
+                        setTimeout(function () {
+                            $('#transactions_attachment_div').html(data);
+                        }, 200);
+                    } else {
+                        showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                    }
+
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+        }
+
+
+        function UpdateFormRecord() {
+
+
+            // ✅ On formt submit,fire event prevent
+            $("#data-edit-form").submit(function (e) {
+                e.preventDefault();
+            });
+
+            // ✅ Check if form is valid
+            if (!$("#data-edit-form").valid()) {
+                event.preventDefault();
+                showSuccessErrorMsg("error", "Error", "Please fill all required fields!");
+                return false;
+            }
+
+            // ✅ Check the validation of form in a new additional way
+            if (!validateInsertForm("data-edit-form")) {
+                event.preventDefault();
+                showSuccessErrorMsg("error", "Error", "Please fill all required fields!");
+                return false;
+            }
+
+
+
+            //-- #region All fields values getting area starts here
+            let TransId = $("#TransIdUpdate").val();
+            let VendorId = $("#VendorId").val();
+            let TransTitle = $("#TransTitleUpdate").val();
+            let TransType = $("#TransTypeUpdate").val();
+            let BankAccountId = $("#BankAccountIdUpdate").val();
+            let EventId = $("#EventIdUpdate").val();
+            let TransAmount = $("#TransAmountUpdate").val();
+            let PaymentMethodId = $("#PaymentMethodIdUpdate").val();
+            let ProcessingDate = $("#ProcessingDateUpdate").val();
+            let Description = $("#DescriptionUpdate").val();
+
+            var AccountTransAttachementFile = $("#AccountTransAttachementFileUpdate").get(0).files;
+
+
+            if (!checkIfStringIsEmtpy(VendorId)) {
+                showSuccessErrorMsg("error", "Error", "Vendor Id is null");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(TransTitle)) {
+                showSuccessErrorMsg("error", "Error", "Trans Title  is null");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(TransType)) {
+                showSuccessErrorMsg("error", "Error", "TransType is null");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(BankAccountId)) {
+                showSuccessErrorMsg("error", "Error", "Bank Account Id is null");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(TransAmount)) {
+                showSuccessErrorMsg("error", "Error", "Trans Amount is null");
+                return false;
+            }
+
+            if (TransAmount < 1 || TransAmount > 1000000) {
+                showSuccessErrorMsg("error", "Error", "Enter valid transaction amount");
+                return false;
+            }
+
+            //-- #region Form initialization area starts here
+            var fileData = new FormData();
+
+            for (var i = 0; i < AccountTransAttachementFile.length; i++) {
+                fileData.append("AccountTransAttachementFile", AccountTransAttachementFile[i]);
+            }
+            fileData.append("TransId", TransId);
+            fileData.append("VendorId", VendorId);
+            fileData.append("TransTitle", TransTitle);
+            fileData.append("TransType", TransType);
+            fileData.append("BankAccountId", BankAccountId);
+            fileData.append("EventId", EventId);
+            fileData.append("TransAmount", TransAmount);
+            fileData.append("PaymentMethodId", PaymentMethodId);
+            fileData.append("ProcessingDate", ProcessingDate);
+            fileData.append("Description", Description);
+            fileData.append("Description", Description);
+
+            //-- #endRegion Form initialization area ends here
+
+
+
+            let saveUrl = "@Url.Action("UpdateVendorAccountTransaction", "Accounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: fileData,
+                success: function (data) {
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", data.message);
+
+                        setTimeout(function () {
+                            window.location.href = "@Url.Action("VendorAccountsTransaction","Accounts" , new {langCode = Model?.PageBasicInfoObj?.langCode,   VendorId = ViewBag.VendorId!=null ? Convert.ToString(ViewBag.VendorId) : "0"})";
+                        }, 1000);
+
+                    }
+                    else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showSuccessErrorMsg("error", "Error", "Something went wrong. Please try again");
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            });
+
+        }
+
+        function DeleteAccountTransactionAttachment(thisParam, AcountTransAttachId, AttachmentURL) {
+            event.preventDefault();
+
+            let confirmClick = confirm('Do you really want to remove this record?');
+            if (confirmClick) {
+                var formData = {
+                    primarykeyValue: AcountTransAttachId,
+                    primaryKeyColumn: "AcountTransAttachId",
+                    tableName: "AccountTransAttachment",
+                    AttachmentURL: AttachmentURL,
+                    SqlDeleteType: "@((short)SqlDeleteTypes.ForeignKeyDelete)"
+
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("DeleteAccountTransactionAttachment", "Accounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })',
+                    data: formData,
+                    success: function (data) {
+
+                        if (data.success) {
+                            showSuccessErrorMsg("success", "Success", data.message);
+                            $(thisParam).closest('tr').remove();
+                        }
+                        else {
+
+                            showSuccessErrorMsg("error", "Error", "Something went wrong during saving of record");
+                        }
+
+
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+
+                        showSuccessErrorMsg("error", "Error", "An error occured. Please try again.");
+                    }
+                });
+
+
+            }
+
+        }
+
+    </script>
+
+}

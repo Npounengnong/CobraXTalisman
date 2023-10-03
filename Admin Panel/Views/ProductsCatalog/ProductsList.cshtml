@@ -1,0 +1,163 @@
+﻿@model Entities.MainModels.ProductsCatalogModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+}
+
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+
+
+    //--drop down area
+    Dictionary<string, string>? CategoryIDs = new Dictionary<string, string>();
+    if (Model != null && Model.CategoryList != null && Model.CategoryList.Count > 0)
+    {
+        foreach (var item in Model.CategoryList)
+        {
+            string? ParentCategory = Model.CategoryList.Where(c => c.CategoryId == item.ParentCategoryId).Select(c => c.Name).FirstOrDefault();
+            string? Category = String.IsNullOrWhiteSpace(ParentCategory) ? item.Name : ParentCategory + " >> " + item.Name;
+            item.Name = Category;
+        }
+
+        CategoryIDs = Model != null && Model.CategoryList != null && Model.CategoryList.Count > 0 ?
+        Model.CategoryList.ToDictionary(v => v.CategoryId.ToString(), t => t.Name) : null;
+
+    }
+
+   
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                EntityId = Model?.PageBasicInfoObj != null ? Model.PageBasicInfoObj.EntityId : 0,
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = true,
+                AddNewButtonType = "OpenNewLink",
+                AddNewButtonNewLinkUrl = Url.Action("CreateNewProduct", "ProductsCatalog", new { langCode = Model?.PageBasicInfoObj?.langCode }),
+                ShowActionsButton = true,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = true,
+                DataExportUrl = Url.Action("ProductsList", "ProductsCatalog", new { langCode = Model?.PageBasicInfoObj?.langCode })
+
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @{
+                SearchFilterModel filter = new SearchFilterModel();
+
+                #region basic settings
+                filter.SearchJSFunctionName = "SearchRecord();";
+                filter.SearchButtonType = "button";
+                filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                filter.SearchURL = Url.Action("ProductsList", "ProductsCatalog", new { langCode = Model?.PageBasicInfoObj?.langCode });
+                #endregion
+
+                filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+            new HtmlFormFieldsEntity(){ FieldID = "ProductId", FieldName="ProductId",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Product Id", LabelText="Product Id", ToolTipText="Enter here the product id", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ProductName", FieldName="ProductName",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Product Name", LabelText="Product Name", ToolTipText="Enter here product name", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "CategoryId", FieldName="CategoryId",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Category", LabelText="Category", ToolTipText="Select  category from the drop down", DropdownData=CategoryIDs},
+            new HtmlFormFieldsEntity(){ FieldID = "IsActive", FieldName="IsActive",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Status", LabelText="Status", ToolTipText="Select  status", DropdownData=IsActiveDropDown},
+            new HtmlFormFieldsEntity(){ FieldID = "FromDate", FieldName="FromDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="From Date", LabelText="From Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ToDate", FieldName="ToDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="To Date", LabelText="To Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/ProductsCatalog/PartialViews/_ProductsList.cshtml", Model)
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+
+
+</div>
+@section  Scripts{
+
+<script>
+
+
+
+
+
+</script>
+
+}

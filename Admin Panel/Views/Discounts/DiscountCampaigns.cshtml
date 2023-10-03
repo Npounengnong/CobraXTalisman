@@ -1,0 +1,406 @@
+﻿@model Entities.MainModels.DiscountModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+}
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                EntityId = Model?.PageBasicInfoObj != null ? Model.PageBasicInfoObj.EntityId : 0,
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = true,
+                ShowActionsButton = false,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = false,
+                DataExportUrl = Url.Action("DiscountCampaigns", "Discounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @{
+                SearchFilterModel filter = new SearchFilterModel();
+
+
+                filter.SearchJSFunctionName = "SearchRecord();";
+                filter.SearchButtonType = "button";
+                filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                filter.SearchURL = Url.Action("DiscountCampaigns", "Discounts", new { langCode = Model?.PageBasicInfoObj?.langCode });
+
+
+
+                filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+            new HtmlFormFieldsEntity(){ FieldID = "CampaignId", FieldName="CampaignId",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Campaign Id", LabelText="Campaign Id", ToolTipText="Enter here the Campaign id", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "MainTitle", FieldName="MainTitle",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Main Title", LabelText="Main Title", ToolTipText="Enter here main title", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "FromDate", FieldName="FromDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="Display Start Date", LabelText="Display Start Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ToDate", FieldName="ToDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="Display End Date", LabelText="Display End Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/Discounts/PartialViews/_DiscountCampaigns.cshtml", Model)
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+
+
+    <!-- Modals area Insert starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityInsert = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityInsert.ModalTitle = "Add New Campaign";
+        htmlBootstrapModalEntityInsert.ModalDivId = "AddNewDataModal";
+        htmlBootstrapModalEntityInsert.SubmitBtnJsFunctionName = "SaveFormRecord();";
+        htmlBootstrapModalEntityInsert.SubmitButtonText = "Save";
+        htmlBootstrapModalEntityInsert.FormId = "data-insert-common-form";
+        htmlBootstrapModalEntityInsert.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+
+        htmlBootstrapModalEntityInsert.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+    new HtmlFormFieldsEntity(){ FieldID = "MainTitleInsert", FieldName="MainTitleInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Main title", LabelText="Main Title", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "DiscountTitleInsert", FieldName="DiscountTitleInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Discount title", LabelText="Discount Title", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "BodyInsert", FieldName="BodyInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Body", LabelText="Body", IsRequired=true , GridColumnClass = "col-sm-12 col-lg-12 col-md-12"},
+    new HtmlFormFieldsEntity(){ FieldID = "DisplayStartDateInsert", FieldName="DisplayStartDateInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="Display start date", LabelText="Display Start Date", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "DisplayEndDateInsert", FieldName="DisplayEndDateInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="Display end date", LabelText="Display End Date", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "IsActiveInsert", FieldName="IsActiveInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select status", LabelText="Is Active", IsRequired=true,DropdownSelectType = (short)HtmlDropdownSelectType.Simple , DropdownData=IsActiveDropDown},
+    new HtmlFormFieldsEntity(){ FieldID = "CoverPictureFileInsert", FieldName="CoverPictureFileInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.File, PlaceHolderText="Select Cover File", LabelText="Cover Picture", IsRequired=false},
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityInsert)
+
+    <!-- /Modals area Insert ends here-->
+    <!-- /Modals edit area starts here-->
+    <div id="modal_edit_area">
+    </div>
+    <!-- /Modals edit area ends here-->
+
+</div>
+@section  Scripts{
+
+    <script>
+
+        function SaveFormRecord() {
+
+            $("#data-insert-common-form").submit(function(e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-insert-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+
+            let MainTitle = $('#MainTitleInsert').val();
+            let DiscountTitle = $('#DiscountTitleInsert').val();
+            let Body = $('#BodyInsert').val();
+            let DisplayStartDate = $('#DisplayStartDateInsert').val();
+            let DisplayEndDate = $('#DisplayEndDateInsert').val();
+            let IsActive = $('#IsActiveInsert').val();
+
+
+            if (!checkIfStringIsEmtpy(MainTitle)) {
+                showSuccessErrorMsg("error", "Error", "Main Title is required!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(DiscountTitle)) {
+                showSuccessErrorMsg("error", "Error", "Discount Title is required!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(Body)) {
+                showSuccessErrorMsg("error", "Error", "Body is required!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(DisplayStartDate)) {
+                showSuccessErrorMsg("error", "Error", "Display start date is required!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(DisplayEndDate)) {
+                showSuccessErrorMsg("error", "Error", "Display start date is required!");
+                return false;
+            }
+
+            var CoverPictureFile = $("#CoverPictureFileInsert").get(0).files;
+            if (CoverPictureFile == undefined || CoverPictureFile == null) {
+                showSuccessErrorMsg("error", "Error", "Cover picture is required!");
+                return false;
+            }
+
+            var formDate = new FormData();
+
+            for (var i = 0; i < CoverPictureFile.length; i++) {
+                formDate.append("CoverPictureFile", CoverPictureFile[i]);
+            }
+            formDate.append("MainTitle", MainTitle);
+            formDate.append("DiscountTitle", DiscountTitle);
+            formDate.append("Body", Body);
+            formDate.append("DisplayStartDate", DisplayStartDate);
+            formDate.append("DisplayEndDate", DisplayEndDate);
+            formDate.append("IsActive", IsActive);
+            formDate.append("DataOperationType", '@((short)DataOperationType.Insert)');
+
+
+            let saveUrl = "@Url.Action("SaveUpdateDiscountCampaigns", "Discounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: formDate,
+                success: function(data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+
+        }
+
+        function UpdateFormRecord() {
+
+            $("#data-edit-common-form").submit(function(e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-edit-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+            let MainTitle = $('#MainTitleUpdate').val();
+            let DiscountTitle = $('#DiscountTitleUpdate').val();
+            let Body = $('#BodyUpdate').val();
+            let DisplayStartDate = $('#DisplayStartDateUpdate').val();
+            let DisplayEndDate = $('#DisplayEndDateUpdate').val();
+            let IsActive = $('#IsActiveUpdate').val();
+            let CoverPictureId = $('#CoverPictureIdUpdate').val();
+            let CampaignId = $('#CampaignIdUpdate').val();
+
+
+            if (!checkIfStringIsEmtpy(MainTitle)) {
+                showSuccessErrorMsg("error", "Error", "Main Title is required!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(DiscountTitle)) {
+                showSuccessErrorMsg("error", "Error", "Discount Title is required!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(Body)) {
+                showSuccessErrorMsg("error", "Error", "Body is required!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(DisplayStartDate)) {
+                showSuccessErrorMsg("error", "Error", "Display start date is required!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(DisplayEndDate)) {
+                showSuccessErrorMsg("error", "Error", "Display start date is required!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(CampaignId)) {
+                showSuccessErrorMsg("error", "Error", "Campaign Id is required!");
+                return false;
+            }
+
+
+            var CoverPictureFile = $("#CoverPictureFileUpdate").get(0).files;
+            if (CoverPictureFile == undefined || CoverPictureFile == null) {
+                showSuccessErrorMsg("error", "Error", "Cover picture is required!");
+                return false;
+            }
+
+            var formDate = new FormData();
+
+            for (var i = 0; i < CoverPictureFile.length; i++) {
+                formDate.append("CoverPictureFile", CoverPictureFile[i]);
+            }
+            formDate.append("MainTitle", MainTitle);
+            formDate.append("DiscountTitle", DiscountTitle);
+            formDate.append("Body", Body);
+            formDate.append("DisplayStartDate", DisplayStartDate);
+            formDate.append("DisplayEndDate", DisplayEndDate);
+            formDate.append("IsActive", IsActive);
+            formDate.append("CoverPictureId", CoverPictureId);
+            formDate.append("CampaignId", CampaignId);
+            formDate.append("DataOperationType", '@((short)DataOperationType.Update)');
+
+
+
+            let saveUrl = "@Url.Action("SaveUpdateDiscountCampaigns", "Discounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: formDate,
+
+                success: function(data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Updated Successfully!");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+
+        }
+
+        function showEditModal(CampaignId) {
+
+            debugger
+
+            //var formDate = new FormData();
+            //formDate.append("CampaignId", CampaignId);
+
+            var formDate = {
+                CampaignId : CampaignId
+            }
+
+            let getUrl = "@Url.Action("GetCampaignDetailById", "Discounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+            $.ajax({
+                type: "GET",
+                url: getUrl,
+                // dataType: "json",
+                // contentType: false, // Not to set any content header
+                // processData: false, // Not to process data
+                cache: false,
+                async: false,
+                data: formDate,
+                success: function(data) {
+
+                    if (data != undefined) {
+                        setTimeout(function() {
+                            $('#modal_edit_area').html(data);
+                            $('#EditDataModal').modal('show');
+                        }, 200);
+
+                    } else {
+                        showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                    }
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+
+
+        }
+
+    </script>
+
+
+
+}

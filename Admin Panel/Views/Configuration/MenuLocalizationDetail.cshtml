@@ -1,0 +1,395 @@
+﻿@model Entities.MainModels.ConfigurationModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+    #endregion
+
+    int MenuNavigationId = Model?.MenuNavigationObj?.MenuNavigationId ?? 0;
+
+
+       //--drop down area
+    Dictionary<string, string>? LanguagesIDs = new Dictionary<string, string>();
+    LanguagesIDs = Model != null && Model.LanguagesList != null && Model.LanguagesList.Count > 0 ?
+    Model.LanguagesList?.ToList().ToDictionary(v => v.LanguageId.ToString(), t => t.LanguageName) : null;
+
+
+}
+
+
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                EntityId = Model?.PageBasicInfoObj!=null ? Model.PageBasicInfoObj.EntityId : 0,
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = true,
+                ShowActionsButton = false,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = false,
+                DataExportUrl = Url.Action("MenuLocalizationDetail", "Configuration", new { langCode = Model?.PageBasicInfoObj?.langCode })
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+   
+    <!-- Inverse colors -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/Configuration/PartialViews/_MenuLocalizationDetail.cshtml", Model)
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+    <!-- /inverse colors -->
+    <!-- Modals area Insert starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityInsert = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityInsert.ModalTitle = "Add Menu Label";
+        htmlBootstrapModalEntityInsert.ModalDivId = "AddNewDataModal";
+        htmlBootstrapModalEntityInsert.SubmitBtnJsFunctionName = "SaveFormRecord();";
+        htmlBootstrapModalEntityInsert.SubmitButtonText = "Save";
+        htmlBootstrapModalEntityInsert.FormId = "data-insert-common-form";
+        htmlBootstrapModalEntityInsert.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+
+        htmlBootstrapModalEntityInsert.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+    new HtmlFormFieldsEntity(){ FieldID = "MenuNavigationIdInsert", FieldName="MenuNavigationIdInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden,  IsRequired=true, DefaultValue = Convert.ToString(MenuNavigationId)},
+    new HtmlFormFieldsEntity(){ FieldID = "textInsert", FieldName="textInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Text", LabelText="Text" , IsRequired=true},
+    new HtmlFormFieldsEntity(){ FieldID = "langIdInsert", FieldName="langIdInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, DropdownSelectType =  (short)HtmlDropdownSelectType.Simple, PlaceHolderText="Select Language", LabelText="Language" , IsRequired=true , DropdownData = LanguagesIDs},
+
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityInsert)
+
+    <!-- /Modals area Insert ends here-->
+    <!-- Modals area Edit starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityEdit = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityEdit.ModalTitle = "Update Menu Label";
+        htmlBootstrapModalEntityEdit.ModalDivId = "EditDataModal";
+        htmlBootstrapModalEntityEdit.SubmitBtnJsFunctionName = "UpdateFormRecord();";
+        htmlBootstrapModalEntityEdit.SubmitButtonText = "Update";
+        htmlBootstrapModalEntityEdit.FormId = "data-edit-common-form";
+        htmlBootstrapModalEntityEdit.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+        htmlBootstrapModalEntityEdit.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+
+    new HtmlFormFieldsEntity(){ FieldID = "MenuNavigationIdUpdate", FieldName="MenuNavigationIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden,  IsRequired=true, DefaultValue = Convert.ToString(MenuNavigationId)},
+    new HtmlFormFieldsEntity(){ FieldID = "textUpdate", FieldName="textUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Text", LabelText="Text" , IsRequired=true},
+    new HtmlFormFieldsEntity(){ FieldID = "langIdUpdate", FieldName="langIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, DropdownSelectType =  (short)HtmlDropdownSelectType.Simple, PlaceHolderText="Select Language", LabelText="Language" , IsRequired=true , DropdownData = LanguagesIDs},
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityEdit)
+
+    <!-- /Modals area Edit ends here-->
+
+
+
+</div>
+@section  Scripts{
+
+    <script>
+
+        function SaveFormRecord() {
+
+            $("#data-insert-common-form").submit(function (e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-insert-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+            let MenuNavigationId = $('#MenuNavigationIdInsert').val();
+            let text = $('#textInsert').val();
+            let langId = $('#langIdInsert').val();
+
+            if (!checkIfStringIsEmtpy(MenuNavigationId)) {
+                showSuccessErrorMsg("error", "Error", "Menu navigation id is null!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(text)) {
+                showSuccessErrorMsg("error", "Error", "Text field is required!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(langId)) {
+                showSuccessErrorMsg("error", "Error", "Language is null");
+                return false;
+            }
+
+            //--make form data
+            var formData = {
+                MenuNavigationId: MenuNavigationId,
+                text: text,
+                langId: langId,
+                DataOperationType: '@((short)DataOperationType.Insert)'
+            }
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            let saveUrl = "@Url.Action("SaveMenuLocalizationLabelText", "Configuration" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                data: formData,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function (data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+
+        }
+
+        function UpdateFormRecord() {
+
+            $("#data-edit-common-form").submit(function (e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-edit-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+            let MenuNavigationId = $('#MenuNavigationIdUpdate').val();
+            let text = $('#textUpdate').val();
+            let langId = $('#langIdUpdate').val();
+
+            if (!checkIfStringIsEmtpy(MenuNavigationId)) {
+                showSuccessErrorMsg("error", "Error", "Menu navigation id is null!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(text)) {
+                showSuccessErrorMsg("error", "Error", "Text field is required!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(langId)) {
+                showSuccessErrorMsg("error", "Error", "Language is null");
+                return false;
+            }
+
+            //--make form data
+            var formData = {
+                MenuNavigationId: MenuNavigationId,
+                text: text,
+                langId: langId,
+                DataOperationType: '@((short)DataOperationType.Update)'
+            }
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            let updateUrl = "@Url.Action("UpdateMenuLocalizationLabelText", "Configuration" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: updateUrl,
+                data: formData,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function (data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                        setTimeout(function () {
+                           location.reload();
+                        }, 1000);
+                    } else {
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+
+        }
+
+        function showEditModal(
+            text,
+            langId) {
+
+
+            //--first empty fields
+          
+            $('#textUpdate').val("");
+            $('#langIdUpdate').val("");
+
+        
+            $('#textUpdate').val(text);
+            $('#langIdUpdate').val(langId);
+
+
+
+            $('#EditDataModal').modal('show');
+
+        }
+
+        function showDeleteConfirmation(MenuNavigationId, langId) {
+            debugger
+            let isConfimr = confirm("Do you really want to delete this label?");
+            if (isConfimr == true) {
+                //--make form data
+                var formData = {
+                    MenuNavigationId: MenuNavigationId,
+                    langId: langId,
+                    DataOperationType: '@((short)DataOperationType.Delete)'
+                }
+
+                // ✅ Show loader area starts here
+                showHideSiteMainLoader(true);
+                // ✅ Show loader area ends here
+
+                let deleteUrl = "@Url.Action("DeleteMenuLocalizationText", "Configuration" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+                $.ajax({
+                    type: "POST",
+                    url: deleteUrl,
+                    data: formData,
+                    // datatype: "json",
+                    cache: false,
+                    async: false,
+
+                    success: function (data) {
+                        debugger
+                        console.log(data);
+                        if (data.success) {
+                            showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1000);
+                        } else {
+                            showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                        }
+
+                        // ✅ Stop loader area starts here
+                        let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                        setTimeout(function () {
+                            showHideSiteMainLoader(false);
+                        }, LoaderTimeDuration ?? 2000);
+                        // ✅ Stop loader area ends here
+
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+
+                        // ✅ Stop loader area starts here
+                        let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                        setTimeout(function () {
+                            showHideSiteMainLoader(false);
+                        }, LoaderTimeDuration ?? 2000);
+                        // ✅ Stop loader area ends here
+                    }
+                })
+            }
+        }
+
+     
+
+
+    </script>
+
+}

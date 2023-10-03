@@ -1,0 +1,55 @@
+﻿@model Entities.MainModels.DiscountModel
+
+
+
+
+
+<!-- Full width modal -->
+<div id="modal_full_categories_discount" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-full">
+        <div class="modal-content">
+            <div class="modal-header site-bg-modal-header">
+                <h5 class="modal-title" id="modal_categories_title">Categories List</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+
+                <!-- Page search form -->
+                @{
+                    SearchFilterModel filter = new SearchFilterModel();
+
+                    #region basic settings
+                    filter.SearchJSFunctionName = "SearchRecord();";
+                    filter.SearchButtonType = "button";
+                    filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                    filter.SearchURL = Url.Action("ShowAllCategoriesForDiscount", "Discounts", new { langCode = Model?.PageBasicInfoObj?.langCode });
+                    #endregion
+
+                    filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+                {
+                new HtmlFormFieldsEntity(){ FieldID = "CategoryId", FieldName="CategoryId",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Category", LabelText="Category", ToolTipText="Enter here the category", DropdownData=null},
+                new HtmlFormFieldsEntity(){ FieldID = "Name", FieldName="Name",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Category Name", LabelText="Category Name", ToolTipText="Enter here category name", DropdownData=null},
+                new HtmlFormFieldsEntity(){ FieldID = "IsDiscountCreatePageSearchEnabled", FieldName="IsDiscountCreatePageSearchEnabled",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden, DefaultValue="true"},
+            
+                };
+                }
+
+                @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+                <!-- /page search form -->
+
+
+                <div class="table-responsive" id="main_data_table">
+                    @await Html.PartialAsync("~/Views/Discounts/PartialViews/DiscountCategories/_DiscountCategoriesList.cshtml", Model)
+                </div>
+
+
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+<!-- /full width modal -->

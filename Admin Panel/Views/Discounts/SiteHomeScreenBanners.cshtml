@@ -1,0 +1,495 @@
+﻿@model Entities.MainModels.DiscountModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+}
+
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                EntityId = Model?.PageBasicInfoObj != null ? Model.PageBasicInfoObj.EntityId : 0,
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = true,
+                ShowActionsButton = true,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = true,
+                DataExportUrl = Url.Action("SiteHomeScreenBanners", "Discounts", new { langCode = Model?.PageBasicInfoObj?.langCode })
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @{
+                SearchFilterModel filter = new SearchFilterModel();
+
+
+                filter.SearchJSFunctionName = "SearchRecord();";
+                filter.SearchButtonType = "button";
+                filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                filter.SearchURL = Url.Action("SiteHomeScreenBanners", "Discounts" , new { langCode = Model?.PageBasicInfoObj?.langCode });
+
+
+
+                filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+            new HtmlFormFieldsEntity(){ FieldID = "BannerID", FieldName="BannerID",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Banner Id", LabelText="Banner Id", ToolTipText="Enter here the banner id", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "MainTitle", FieldName="MainTitle",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Main Title", LabelText="Main Title", ToolTipText="Enter here main title", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "FromDate", FieldName="FromDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="From Date", LabelText="From Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ToDate", FieldName="ToDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="To Date", LabelText="To Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/Discounts/PartialViews/_SiteHomeScreenBanners.cshtml", Model)
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+
+
+    <!-- Modals area Insert starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityInsert = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityInsert.ModalTitle = "Add Banner";
+        htmlBootstrapModalEntityInsert.ModalDivId = "AddNewDataModal";
+        htmlBootstrapModalEntityInsert.SubmitBtnJsFunctionName = "SaveFormRecord();";
+        htmlBootstrapModalEntityInsert.SubmitButtonText = "Save";
+        htmlBootstrapModalEntityInsert.FormId = "data-insert-common-form";
+        htmlBootstrapModalEntityInsert.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+
+        htmlBootstrapModalEntityInsert.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+    new HtmlFormFieldsEntity(){ FieldID = "TopTitleInsert", FieldName="TopTitleInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Top Title", LabelText="Top Title", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "MainTitleInsert", FieldName="MainTitleInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Main Title", LabelText="Main Title", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "BottomTitleInsert", FieldName="BottomTitleInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Bottom Title", LabelText="Bottom Title", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "LeftButtonTextInsert", FieldName="LeftButtonTextInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Left Button Text", LabelText="Left Button Text", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "LeftButtonUrlInsert", FieldName="LeftButtonUrlInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Left Button Url", LabelText="Left Button Url", IsRequired=false },
+    new HtmlFormFieldsEntity(){ FieldID = "RightButtonTextInsert", FieldName="RightButtonTextInsertInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Right Button Text", LabelText="Right Button Text", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "RightButtonUrlInsert", FieldName="RightButtonUrlInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Right Button Url", LabelText="Right Button Url", IsRequired=false },
+    new HtmlFormFieldsEntity(){ FieldID = "DisplaySeqNoInsert", FieldName="DisplaySeqNoInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Display No", LabelText="Display No", IsRequired=false },
+
+    new HtmlFormFieldsEntity(){ FieldID = "IsActiveInsert", FieldName="IsActiveInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Status", LabelText="Is Active", IsRequired=true,DropdownSelectType = (short)HtmlDropdownSelectType.Simple , DropdownData=IsActiveDropDown},
+    new HtmlFormFieldsEntity(){ FieldID = "BannerImgUrlInsert", FieldName="BannerImgUrlInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.File, PlaceHolderText="Select Image File", LabelText="Banner Image", IsRequired=true},
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityInsert)
+
+    <!-- /Modals area Insert ends here-->
+    <!-- Modals area Edit starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityEdit = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityEdit.ModalTitle = "Update Banner";
+        htmlBootstrapModalEntityEdit.ModalDivId = "EditDataModal";
+        htmlBootstrapModalEntityEdit.SubmitBtnJsFunctionName = "UpdateFormRecord();";
+        htmlBootstrapModalEntityEdit.SubmitButtonText = "Update";
+        htmlBootstrapModalEntityEdit.FormId = "data-edit-common-form";
+        htmlBootstrapModalEntityEdit.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+        htmlBootstrapModalEntityEdit.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+    new HtmlFormFieldsEntity(){ FieldID = "TopTitleUpdate", FieldName="TopTitleUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Top Title", LabelText="Top Title", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "MainTitleUpdate", FieldName="MainTitleUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Main Title", LabelText="Main Title", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "BottomTitleUpdate", FieldName="BottomTitleUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Bottom Title", LabelText="Bottom Title", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "LeftButtonTextUpdate", FieldName="LeftButtonTextUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Left Button Text", LabelText="Left Button Text", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "LeftButtonUrlUpdate", FieldName="LeftButtonUrlUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Left Button Url", LabelText="Left Button Url", IsRequired=false },
+    new HtmlFormFieldsEntity(){ FieldID = "RightButtonTextUpdate", FieldName="RightButtonTextUpdateUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Right Button Text", LabelText="Right Button Text", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "RightButtonUrlUpdate", FieldName="RightButtonUrlUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Right Button Url", LabelText="Right Button Url", IsRequired=false },
+    new HtmlFormFieldsEntity(){ FieldID = "DisplaySeqNoUpdate", FieldName="DisplaySeqNoUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Display No", LabelText="Display No", IsRequired=false },
+    new HtmlFormFieldsEntity(){ FieldID = "IsActiveUpdate", FieldName="IsActiveUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Status", LabelText="Is Active", IsRequired=true,DropdownSelectType = (short)HtmlDropdownSelectType.Simple , DropdownData=IsActiveDropDown},
+    new HtmlFormFieldsEntity(){ FieldID = "BannerImgUrlUpdate", FieldName="BannerImgUrlUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.File, PlaceHolderText="Select Image File", LabelText="Banner Image", IsRequired=false},
+    new HtmlFormFieldsEntity(){ FieldID = "AttachmentIdUpdate", FieldName="AttachmentIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden},
+
+    new HtmlFormFieldsEntity(){ FieldID = "BannerIdUpdate", FieldName="BannerIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden},
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityEdit)
+
+    <!-- /Modals area Edit ends here-->
+
+
+</div>
+@section  Scripts{
+
+    <script>
+
+        function SaveFormRecord() {
+
+            $("#data-insert-common-form").submit(function(e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-insert-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+
+
+
+
+            let TopTitle = $('#TopTitleInsert').val();
+            let MainTitle = $('#MainTitleInsert').val();
+            let BottomTitle = $('#BottomTitleInsert').val();
+            let LeftButtonText = $('#LeftButtonTextInsert').val();
+            let LeftButtonUrl = $('#LeftButtonUrlInsert').val();
+            let RightButtonText = $('#RightButtonTextInsert').val();
+            let RightButtonUrl = $('#RightButtonUrlInsert').val();
+            let DisplaySeqNo = $('#DisplaySeqNoInsert').val();
+            let IsActive = $('#IsActiveInsert').val();
+
+            if (!checkIfStringIsEmtpy(TopTitle)) {
+                showSuccessErrorMsg("error", "Error", "Please fill top title!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(MainTitle)) {
+                showSuccessErrorMsg("error", "Error", "Please fill main title!");
+                return false;
+            }
+
+
+            if (!checkIfStringIsEmtpy(IsActive)) {
+                showSuccessErrorMsg("error", "Error", "Please fill status field!");
+                return false;
+            }
+
+
+
+            var BannerImgUrlFile = $("#BannerImgUrlInsert").get(0).files;
+
+            if (BannerImgUrlFile == undefined || BannerImgUrlFile == null || BannerImgUrlFile.length < 1) {
+                showSuccessErrorMsg("error", "Error", "Please select banner image!");
+                return false;
+            }
+
+            var formDate = new FormData();
+
+            for (var i = 0; i < BannerImgUrlFile.length; i++) {
+                formDate.append("BannerImgUrlFile", BannerImgUrlFile[i]);
+            }
+            formDate.append("TopTitle", TopTitle);
+            formDate.append("MainTitle", MainTitle);
+            formDate.append("BottomTitle", BottomTitle);
+            formDate.append("LeftButtonText", LeftButtonText);
+            formDate.append("LeftButtonUrl", LeftButtonUrl);
+            formDate.append("RightButtonText", RightButtonText);
+            formDate.append("RightButtonUrl", RightButtonUrl);
+            formDate.append("DisplaySeqNo", DisplaySeqNo);
+            formDate.append("IsActive", IsActive);
+            formDate.append("DataOperationType", '@((short)DataOperationType.Insert)');
+
+
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+
+
+            let saveUrl = "@Url.Action("SaveUpdateHomeScreenBanner", "Discounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: formDate,
+                success: function(data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+
+        }
+
+        function UpdateFormRecord() {
+            debugger
+            $("#data-edit-common-form").submit(function(e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-edit-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+
+            let BannerId = $('#BannerIdUpdate').val();
+            let TopTitle = $('#TopTitleUpdate').val();
+            let MainTitle = $('#MainTitleUpdate').val();
+            let BottomTitle = $('#BottomTitleUpdate').val();
+            let LeftButtonText = $('#LeftButtonTextUpdate').val();
+            let LeftButtonUrl = $('#LeftButtonUrlUpdate').val();
+            let RightButtonText = $('#RightButtonTextUpdate').val();
+            let RightButtonUrl = $('#RightButtonUrlUpdate').val();
+            let DisplaySeqNo = $('#DisplaySeqNoUpdate').val();
+            let AttachmentId = $('#AttachmentIdUpdate').val();
+            let IsActive = $('#IsActiveUpdate').val();
+
+            if (!checkIfStringIsEmtpy(TopTitle)) {
+                showSuccessErrorMsg("error", "Error", "Please fill top title!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(MainTitle)) {
+                showSuccessErrorMsg("error", "Error", "Please fill main title!");
+                return false;
+            }
+
+
+            if (!checkIfStringIsEmtpy(IsActive)) {
+                showSuccessErrorMsg("error", "Error", "Please fill status field!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(BannerId)) {
+                showSuccessErrorMsg("error", "Error", "Banner id is null!");
+                return false;
+            }
+
+
+            var BannerImgUrlFile = $("#BannerImgUrlUpdate").get(0).files;
+
+
+            var formDate = new FormData();
+
+            for (var i = 0; i < BannerImgUrlFile.length; i++) {
+                formDate.append("BannerImgUrlFile", BannerImgUrlFile[i]);
+            }
+            formDate.append("BannerId", BannerId);
+            formDate.append("TopTitle", TopTitle);
+            formDate.append("MainTitle", MainTitle);
+            formDate.append("BottomTitle", BottomTitle);
+            formDate.append("LeftButtonText", LeftButtonText);
+            formDate.append("LeftButtonUrl", LeftButtonUrl);
+            formDate.append("RightButtonText", RightButtonText);
+            formDate.append("RightButtonUrl", RightButtonUrl);
+            formDate.append("DisplaySeqNo", DisplaySeqNo);
+            formDate.append("AttachmentId", AttachmentId);
+            formDate.append("IsActive", IsActive);
+            formDate.append("DataOperationType", '@((short)DataOperationType.Update)');
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+
+            let saveUrl = "@Url.Action("SaveUpdateHomeScreenBanner", "Discounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: formDate,
+
+                success: function(data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Updated Successfully!");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+
+        }
+
+        function showEditModal(BannerId) {
+            
+            var formData = {
+                BannerId: BannerId
+
+            }
+
+            let getUrl = "@Url.Action("GetHomeScreenBannerDetailById", "Discounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "GET",
+                url: getUrl,
+                // datatype: "json",
+                cache: false,
+                async: false,
+                data: formData,
+
+                success: function(data) {
+                    console.log(data);
+
+                    if (data != null && data != undefined && data.bannerId != undefined) {
+                        //--now set new values
+                        $('#BannerIdUpdate').val(BannerId);
+                        $('#TopTitleUpdate').val(data.topTitle);
+                        $('#MainTitleUpdate').val(data.mainTitle);
+                        $('#BottomTitleUpdate').val(data.bottomTitle);
+                        $('#LeftButtonTextUpdate').val(data.leftButtonText);
+                        $('#LeftButtonUrlUpdate').val(data.leftButtonUrl);
+                        $('#RightButtonTextUpdate').val(data.rightButtonText);
+                        $('#RightButtonUrlUpdate').val(data.rightButtonUrl);
+                        $('#DisplaySeqNoUpdate').val(data.displaySeqNo);
+                        $('#AttachmentIdUpdate').val(data.attachmentId);
+
+                        if (data.isActive != undefined && data.isActive != null && (data.isActive == 'True' || data.isActive == true)) {
+                            $('#IsActiveUpdate').val('true');
+                        } else {
+                            $('#IsActiveUpdate').val('false');
+                        }
+
+                        $('#EditDataModal').modal('show');
+                    } else {
+                        return false;
+                    }
+
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+
+
+
+
+
+        }
+
+    </script>
+
+
+
+}

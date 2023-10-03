@@ -1,0 +1,212 @@
+﻿@model Entities.MainModels.ProductsCatalogModel
+
+@{
+    
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+
+}
+
+
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                EntityId = Model?.PageBasicInfoObj != null ? Model.PageBasicInfoObj.EntityId : 0,
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = false,
+                ShowActionsButton = false,
+                ShowExportToPdfButton = false,
+                ShowGoBackButton = true,
+                ShowExportToExcelButton = false,
+                DataExportUrl = ""
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="card">
+                      
+                        <div class="card-body">
+                            <div class="list-feed">
+                                <div class="list-feed-item border-warning-400">
+                                  
+                                    <a href="#">1. </a> You can import multiple products into your system from the excel file.
+                                </div>
+                                <div class="list-feed-item border-warning-400">
+                                  
+                                    <a href="#">2. </a> Download the excel format file from this link: &nbsp; &nbsp;
+                                    <button type="button" onclick="downloadExcelFormat()" class="btn btn-success btn-labeled btn-labeled-left btn-sm"><b><i class="icon-file-excel"></i></b> <span id="lbl_excel_download_btn"> Excel Format</span></button>
+                                </div>
+
+                                <div class="list-feed-item border-warning-400">
+
+                                    <a href="#">3. </a> Once you donwload above excel file format then fill data about your products in the excel file and upload in below option.
+                                    Keep in mind that you have not to remove the top header row of the excel file because it is format for uploading the data. If you change any
+                                    header column text then you will not be able to upload the data.
+                                </div>
+
+                              
+                            </div>
+                        </div>
+                    </div>
+                 
+
+                </div>
+
+               <div class="col-lg-6 col-md-6">
+                    <div class="card">
+
+                        <div class="card-body">
+                            <form method="post" id="data-insert-common-form" asp-area="" asp-controller="" asp-action="" enctype="multipart/form-data">
+
+
+                                <div class="form-group">
+                                    <label id="lbl_yourExcelFile">Your Excel File:</label>
+                                   @* <div class="uniform-uploader"><input type="file" id="ProductsAttachmentFile" name="ProductsAttachmentFile" required accept=".xlsx" class="form-input-styled" data-fouc=""><span class="filename" style="user-select: none;">No file selected</span><span class="action btn bg-pink-400" style="user-select: none;">Choose File</span></div>*@
+                              
+                                    <input type="file" class="form-control" id="ProductsAttachmentFile" name="ProductsAttachmentFile" placeholder="Select Image File" accept=".xlsx">
+                                    <span class="form-text text-muted">Accepted formats: .xlsx @* Max file size 2Mb*@</span>
+                                </div>
+
+
+
+                                <div class="text-right">
+                                    <button type="submit" onclick="UploadExcelFile()" class="btn btn-primary"><span id="lbl_upload_excel_btn">Upload Excel</span>  <i class="icon-paperplane ml-2"></i></button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-lg-12 col-md-12" id="buld_upload_validation_area">
+
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+</div>
+@section  Scripts{
+
+    <script>
+          function UploadExcelFile() {
+
+
+
+            $("#data-insert-common-form").submit(function(e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-insert-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+            var ProductsAttachmentFile = $("#ProductsAttachmentFile").get(0).files;
+
+            if (ProductsAttachmentFile == undefined || ProductsAttachmentFile == null || ProductsAttachmentFile.length < 1) {
+                showSuccessErrorMsg("error", "Error", "Please select the products excel file!");
+                return false;
+            }
+
+
+
+            var formDate = new FormData();
+
+            for (var i = 0; i < ProductsAttachmentFile.length; i++) {
+                formDate.append("ProductsAttachmentFile", ProductsAttachmentFile[i]);
+            }
+        
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            let saveUrl = "@Url.Action("UploadProductsBulkExcelFile", "ProductsCatalog" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+               // dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: formDate,
+                success: function(data) {
+                    debugger
+                    $("#buld_upload_validation_area").html(data)
+                    
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+
+        }
+
+        function downloadExcelFormat(){
+            window.location.href = "/content/themeContent/prod_excel_format/ProductsBulkUploadExcelFormat.xlsx"
+        }
+     
+    </script>
+
+}

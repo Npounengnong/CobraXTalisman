@@ -1,0 +1,244 @@
+﻿@model Entities.MainModels.ConfigurationModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+}
+
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+
+
+    #region drop down area starts here
+    Dictionary<string, string>? RolesListIDs = new Dictionary<string, string>();
+    if (Model != null && Model.RolesList != null && Model.RolesList.Count > 0)
+    {
+        RolesListIDs = Model.RolesList.ToDictionary(v => v.RoleId.ToString(), t => t.RoleName);
+    }
+
+    //--drop down area
+    Dictionary<string, string>? EntityListSearchIDs = new Dictionary<string, string>();
+    if (Model != null && Model.EntityListSearchDropDown != null && Model.EntityListSearchDropDown.Count > 0)
+    {
+        EntityListSearchIDs = Model.EntityListSearchDropDown.ToDictionary(v => v.EntityId.ToString(), t => t.EntityName);
+    }
+    #endregion dropdown area ends here
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = false,
+                ShowActionsButton = false,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = false,
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @{
+                SearchFilterModel filter = new SearchFilterModel();
+
+                #region basic settings
+                filter.SearchJSFunctionName = "SearchRecord();";
+                filter.SearchButtonType = "button";
+                filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                filter.SearchURL = Url.Action("RolesRightsSetting", "Configuration", new { langCode = Model?.PageBasicInfoObj?.langCode });
+                #endregion
+
+                filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+
+            new HtmlFormFieldsEntity(){ FieldID = "RoleId", FieldName="RoleId",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Role", LabelText="Role Name", ToolTipText="Select  role from drop down", IsRequired=true , DropdownData=RolesListIDs},
+            new HtmlFormFieldsEntity(){ FieldID = "EntityId", FieldName="EntityId",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Entity", LabelText="Entity Name", ToolTipText="Select  entity from drop down", DropdownData=EntityListSearchIDs},
+
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-12">
+
+                    <div class="d-flex justify-content-end align-items-center">
+                        <button type="submit" onclick="SaveRolesRights();" class="btn bg-teal-400 btn-labeled ml-3"><span id="lbl_save_role_btn">Save Roles</span>  <i class="icon-stack-plus ml-2"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @{
+                            if (ViewBag.IsAjaxRequest == true)
+                            {
+                                await Html.PartialAsync("~/Views/Configuration/PartialViews/_RolesRightsSetting.cshtml", Model);
+                            }
+                        }
+
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+
+
+</div>
+@section  Scripts{
+
+    <script>
+
+
+        function SaveRolesRights() {
+
+
+            debugger
+
+            let RoleId = $("#RoleId").val();
+
+
+            if (!checkIfStringIsEmtpy(RoleId) || RoleId < 1) {
+                showSuccessErrorMsg("error", "Error", "Please select role name!");
+                return false;
+            }
+
+            let RolesRightsArray = [];
+
+            $('.check-select-role').each(function() {
+
+                let EntityId = $(this).attr("data_entityId");
+                let RightId = $(this).attr("data_rightId");
+
+                var checked = $(this).prop("checked");
+
+                //if (checked) {
+                //    RolesRightsArray.push({
+                //        EntityId: EntityId,
+                //        RightId: RightId
+                //    });
+                //}
+
+                RolesRightsArray.push({
+                    EntityId: EntityId,
+                    RightId: RightId,
+                    Checked: checked != undefined && checked!=null && checked==true ? 1 : 0
+                });
+
+            });
+
+            let recordValueJson = JSON.stringify(RolesRightsArray);
+
+            if (!checkIfStringIsEmtpy(recordValueJson)) {
+                showSuccessErrorMsg("error", "Error", "No roles righst found.");
+                return false;
+            }
+
+            var saveUrl = '@Url.Action("SaveRolesRights", "Configuration" , new { langCode = Model?.PageBasicInfoObj?.langCode })';
+
+            //--make form data
+            var formDate = {
+                RoleId: RoleId,
+                recordValueJson: recordValueJson
+
+            }
+
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                data: formDate,
+               // datatype: "json",
+                //  contentType: false, // Not to set any content header
+               // processData: false, // Not to process data
+                cache: false,
+                async: false,
+
+                success: function(data) {
+                    console.log(data);
+                    if (data.success) {
+                         showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                    } else {
+                         showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                    }
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                     showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            });
+
+            //--write remaining code below for saving record
+        }
+
+
+    </script>
+
+}

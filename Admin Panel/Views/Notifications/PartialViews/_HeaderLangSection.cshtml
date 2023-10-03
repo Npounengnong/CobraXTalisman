@@ -1,0 +1,40 @@
+﻿@model Entities.MainModels.NotificationsModel
+
+
+
+
+
+@{
+    if (Model != null && Model.LanguagesList != null && Model.LanguagesList.Count > 0)
+    {
+
+        string? LangCode = Model?.PageBasicInfoObj?.langCode;
+        var SelectedLanguage = Model.LanguagesList.FirstOrDefault(x => x.LanguageCode == LangCode);
+        SelectedLanguage = SelectedLanguage ?? Model.LanguagesList.FirstOrDefault();
+
+        <a href="#" class="navbar-nav-link dropdown-toggle" data-toggle="dropdown">
+            <img src="@SelectedLanguage?.FlagUrl" class="img-flag mr-2" alt="">
+            @SelectedLanguage?.LanguageName
+        </a>
+        <div class="dropdown-menu dropdown-menu-right">
+
+
+            @foreach (var lng in Model.LanguagesList)
+            {
+                <a href="#" onclick="setSelectedLanguageInSession('@lng.LanguageCode')" class="dropdown-item english"><img src="@lng.FlagUrl" class="img-flag" alt=""> @lng.LanguageName</a>
+
+            }
+
+        </div>
+    }
+
+}
+
+
+
+
+
+
+
+
+

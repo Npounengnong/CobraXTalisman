@@ -1,0 +1,140 @@
+﻿@model Entities.MainModels.ConfigurationModel
+
+
+@await Html.PartialAsync("~/Views/Common/_DataTableLength.cshtml")
+
+<table class="table site-table-listing">
+    <thead>
+        <tr>
+            <th id="lbl_hdr_roleName"> Role Name</th>
+            <th id="lbl_hdr_roleEntityid"> Entity ID</th>
+            <th id="lbl_hdr_roleEntityName"> Entity Name</th>
+            <th id="lbl_hdr_roleEntityType"> Entity Type</th>
+            <th id="lbl_hdr_roleRight"> Right</th>
+
+
+
+
+        </tr>
+    </thead>
+    <tbody>
+
+        @{
+            if ((Model != null && Model.EntityList != null && Model.EntityList.Count > 0) && (Model.RightsList != null && Model.RightsList.Count > 0))
+            {
+                foreach (var ent in Model.EntityList)
+                {
+
+
+
+                    <tr>
+                        <td><span class="text-dark"> @ViewBag.SelectedRoleName   </span></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div>
+                                    <a href="#!" class="text-default font-weight-semibold">@ent.EntityId</a>
+
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div>
+                                    <a href="#!" class="text-default font-weight-semibold">@ent.EntityName</a>
+
+                                </div>
+                            </div>
+                        </td>
+
+                        <td><span class="text-dark">@ent.EntityTypeName</span></td>
+
+
+
+                        <td>
+
+                            <ul class="list list-unstyled mb-0">
+                                @foreach (var right in Model.RightsList)
+                                {
+                                    string checkedCondition = string.Empty;
+
+
+                                    checkedCondition = Model.RoleRightList?.Count()>0 && Model.RoleRightList?.Any(x => x.RightId == right.RightId && x.RoleId == Convert.ToInt32(ViewBag.SelectedRoleId) && x.EntityId == ent.EntityId) == true ? "checked=checked" : string.Empty;
+
+                                    <li>
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <div>
+                                                <span class="badge badge-mark border-success mr-2"></span>
+                                                @right.RightName
+                                            </div>
+                                            <div>
+                                                <span class="font-weight-semibold">
+                                                    <input type="checkbox" class="check-select-role" @Html.Raw(checkedCondition) data_entityId="@ent.EntityId" data_rightId="@right.RightId">
+                                                </span>
+                                            </div>
+
+                                        </div>
+
+                                    </li>
+
+
+                                }
+
+
+                            </ul>
+
+
+
+
+                        </td>
+
+
+
+
+                    </tr>
+
+
+
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="text-center" colspan="20"><b>  No record found </b></td>
+
+                </tr>
+            }
+        }
+
+
+
+
+    </tbody>
+</table>
+
+
+
+<div class="row" id="pagination_div">
+
+    @{
+        if (Model != null && Model.pageHelperObj != null)
+        {
+            PagerHelper ph = new PagerHelper();
+            ph.CurrentPage = Model.pageHelperObj.CurrentPage;
+            ph.TotalRecords = Model.pageHelperObj.TotalRecords;
+            ph.RecordsPerPage = Model.pageHelperObj.RecordsPerPage;
+            ph.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+            ph.PageUrl = Url.Action("RolesRightsSetting", "Configuration", new { langCode = Model?.PageBasicInfoObj?.langCode });
+
+            ph.AjaxEnabled = true;
+            ph.OnClientClickAjaxCall = "PaginationAfterAjax(this)";
+
+            @await Html.PartialAsync("~/Views/Common/_Pager.cshtml", ph)
+        }
+
+    }
+
+
+</div>
+
+

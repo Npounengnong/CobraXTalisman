@@ -1,0 +1,606 @@
+﻿@model Entities.MainModels.DiscountModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+
+    #endregion
+}
+
+
+<!--Page specific java script-->
+<script src="~/content/themeContent/global_assets/js/demo_pages/form_checkboxes_radios.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/plugins/purify.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/plugins/sortable.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/fileinput.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/demo_pages/uploader_bootstrap.js"></script>
+<!--/Page specific java script-->
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+    List<SelectListItem> DiscountValueType = new List<SelectListItem>();
+    DiscountValueType.Add(new SelectListItem { Value = "1", Text = "Fixed Value" });
+    DiscountValueType.Add(new SelectListItem { Value = "2", Text = "Percentage" });
+
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = false,
+                ShowActionsButton = false,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = false,
+                ShowGoBackButton = true,
+
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+
+    <form class="form-validate-jquery" id="data-insert-form" action="#">
+
+
+        <div class="card border-left-3 border-left-slate">
+            <div class="card-header header-elements-inline">
+                <h6 class="card-title" id="lbl_discount_page_sub_title">@(Model?.PageBasicInfoObj?.PageTitle ?? "Page Info")</h6>
+                <div class="header-elements">
+                    <div class="list-icons">
+                        <a class="list-icons-item" data-action="collapse"></a>
+                        @*  <a class="list-icons-item" data-action="reload"></a>
+                        <a class="list-icons-item" data-action="remove"></a>*@
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <ul class="nav nav-tabs nav-tabs-highlight mb-0">
+                    <li class="nav-item"><a href="#discount-info-tab" id="discount-info-anchor" class="nav-link active" data-toggle="tab"><i class="icon-user mr-2"></i><span id="lbl_discount_info_tab"> Discount Info</span></a></li>
+                    <li class="nav-item" id="discount-type-data-nav-item" style="display:none;"><a href="#discount-type-data-tab" id="discount-type-data-anchor" class="nav-link" data-toggle="tab"><i class="icon-address-book mr-2"></i> <span id="lbl_products_tab">Products</span></a></li>
+
+
+                </ul>
+
+                <div class="tab-content card card-body border-top-0 rounded-top-0 mb-0">
+                    <div class="tab-pane fade show active" id="discount-info-tab">
+                        <fieldset class="mb-3">
+
+                            <div class="form-group row">
+
+                                <!--Hidden fields area-->
+                                <input type="hidden" id="DiscountId" name="DiscountId" value="@(Model!=null && Model.DiscountObj!=null ? Model.DiscountObj.DiscountId : 0)" />
+                                <!--/Hidden fields area-->
+
+
+                                <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                    <label>
+                                        <span id="lbl_old_disct_title">Title</span>
+                                        <span class="text-danger">*</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="Enter here the title for discount"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                    </label>
+                                    <input type="text" class="form-control" id="Title" name="Title" value="@(Model.DiscountObj.Title)" placeholder="" required>
+
+                                </div>
+
+                                <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                    <label>
+                                        <span id="lbl_old_disct_type"> Discount Type</span>
+                                        <span class="text-danger">*</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select discount type from the dropdown"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                    </label>
+
+                                    <!--During update of discount, do not allow the user to change type of discount, so pick its id from the hidden field-->
+                                    <input type="hidden" id="DiscountTypeId" name="DiscountTypeId" value="@Model?.DiscountObj?.DiscountTypeId" />
+                                    <input type="text" class="form-control" name="DiscountTypeForDisplayPurposeOnly" value="@(Model?.DiscountTypeList?.Where(i=>i.DiscountTypeId==Model?.DiscountObj?.DiscountTypeId)?.FirstOrDefault()?.DiscountTypeName)" readonly />
+
+
+                                    @* <select id="DiscountTypeId" name="DiscountTypeId" class="form-control" onchange="GetSelectedDiscountTypeData()" required >
+                                    <option value="">Select a Discount Type...</option>
+                                    @{
+                                    int DiscountTypeId = Model != null && Model.DiscountObj != null && Model.DiscountObj.DiscountTypeId > 0 ? Model.DiscountObj.DiscountTypeId : 0;
+
+                                    if (Model != null && Model.DiscountTypeList != null && Model.DiscountTypeList.Count > 0)
+                                    {
+                                    foreach (var item in Model.DiscountTypeList.Where(d => d.IsActive != null && d.IsActive == true).ToList())
+                                    {
+                                    if (DiscountTypeId == item.DiscountTypeId)
+                                    {
+                                    <option value="@item.DiscountTypeId" selected>@item.DiscountTypeName</option>
+                                    }
+                                    else
+                                    {
+                                    <option value="@item.DiscountTypeId">@item.DiscountTypeName</option>
+                                    }
+
+                                    }
+                                    }
+                                    }
+
+
+                                    </select>*@
+                                </div>
+
+
+                            </div>
+
+                            <div class="form-group row">
+
+
+                                <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                    <label>
+                                        <span id="lbl_old_disct_value_type">  Discount Value Type</span>
+                                        <span class="text-danger">*</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select either fixed value or percentage. If percentage is selected then the discount will be calculated as a percentage on the amount"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                    </label>
+                                    <select id="DiscountValueType" name="DiscountValueType" class="form-control" required>
+                                        <option value="">Select a Discount Value...</option>
+                                        @{
+                                            string DiscountValueTypeId = Model != null && Model.DiscountObj != null && Model.DiscountObj.DiscountValueType > 0 ? Model.DiscountObj.DiscountValueType.ToString() : "0";
+
+                                            if (DiscountValueType != null && DiscountValueType.Count > 0)
+                                            {
+                                                foreach (var item in DiscountValueType)
+                                                {
+                                                    if (DiscountValueTypeId == item.Value)
+                                                    {
+                                                        <option value="@item.Value" selected>@item.Text</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.Value">@item.Text</option>
+                                                    }
+
+                                                }
+                                            }
+                                        }
+
+
+                                    </select>
+
+                                </div>
+
+                                <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                    <label>
+                                        <span id="lbl_old_disct_value"> Discount Value</span>
+                                        <span class="text-danger">*</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="Value of discount"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                    </label>
+                                    <input type="number" class="form-control" id="DiscountValue" name="DiscountValue" value="@(Model.DiscountObj.DiscountValue)" placeholder="" required>
+
+                                </div>
+
+
+                            </div>
+
+
+
+                            <div class="form-group row">
+
+                                @{
+                                    string StartDate = Model != null && Model.DiscountObj != null ?
+                                    Model.DiscountObj.StartDate.ToString("yyyy-MM-dd HH:mm:ss").Replace(' ', 'T') : "";
+                                }
+                                <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                    <label>
+                                        <span id="lbl_old_disct_startDte"> Start Date</span>
+                                        <span class="text-danger">*</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="The product will be available on site after this date"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                    </label>
+
+                                    <div class="input-group">
+
+                                        <input type="datetime-local" id="StartDate" name="StartDate" value="@(StartDate)" class="form-control" placeholder="Start date &hellip;">
+                                    </div>
+
+                                </div>
+
+                                <div class="col-sm-12 col-lg-6 col-md-6">
+                                    @{
+                                        string EndDate = Model != null && Model.DiscountObj != null ?
+                                        Model.DiscountObj.EndDate.ToString("yyyy-MM-dd HH:mm:ss").Replace(' ', 'T') : "";
+                                    }
+                                    <label>
+                                        <span id="lbl_old_disct_endDte">End Date</span>
+                                        <span class="text-danger">*</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="The product will not be available on site after this date"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                    </label>
+
+                                    <div class="input-group">
+
+                                        <input type="datetime-local" id="EndDate" name="EndDate" value="@EndDate" class="form-control" placeholder="Start date &hellip;">
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+                            <div class="form-group row">
+
+
+                                <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                    <label>
+                                        <span id="lbl_old_disct_couponCodeRequired">Is Coupon Code Required?</span>
+                                        @*  <span class="text-danger">*</span>*@
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="If coupon code required, then it is necessary to provide coupon code in cart during order placement"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                    </label>
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="IsCouponCodeRequired" name="IsCouponCodeRequired" onchange="EnableCouponCodeField();" @(Model!=null && Model.DiscountObj!=null && Model.DiscountObj.IsCouponCodeRequired!=null && Model.DiscountObj.IsCouponCodeRequired==true ? "checked" : "") class="form-check-input-styled-info" checked data-fouc>
+
+                                        </label>
+                                    </div>
+
+                                </div>
+
+
+                                @{
+                                    string CouponCodeCss = Model != null && Model.DiscountObj != null && Model.DiscountObj.IsCouponCodeRequired != null && Model.DiscountObj.IsCouponCodeRequired == true ? "style='display: block;'" : "style='display: none;'";
+                                }
+
+                                <div class="col-sm-12 col-lg-6 col-md-6" id="CouponValueDiv" @CouponCodeCss>
+
+                                    <label>
+                                        <span id="lbl_old_disct_couponCode"> Coupon Code</span>
+                                        @*   <span class="text-danger">*</span>*@
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="Coupon code"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                    </label>
+                                    <input type="text" class="form-control" id="CouponCode" name="CouponCode" value="@(Model.DiscountObj.CouponCode)" placeholder="" required>
+
+                                </div>
+
+
+
+                            </div>
+
+                            <div class="form-group row">
+
+
+                                <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                    <label>
+                                        <span id="lbl_old_disct_BoundToMaxQuantity"> Is Bound To Max Quantity?</span>
+                                        @*    <span class="text-danger">*</span>*@
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="If this option is enabled, then coupons will be expired after usage upto max quantity"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                    </label>
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="IsBoundToMaxQuantity" name="IsBoundToMaxQuantity" onchange="EnableIsBoundToMaxQuantityField();" @(Model!=null && Model.DiscountObj!=null && Model.DiscountObj.IsBoundToMaxQuantity!=null && Model.DiscountObj.IsBoundToMaxQuantity==true ? "checked" : "") class="form-check-input-styled-info" data-fouc>
+
+                                        </label>
+                                    </div>
+
+                                </div>
+
+                                @{
+                                    string MaxQuantityCss = Model != null && Model.DiscountObj != null && Model.DiscountObj.IsBoundToMaxQuantity != null && Model.DiscountObj.IsBoundToMaxQuantity == true ? "style='display: block;'" : "style='display: none;'";
+                                }
+
+                                <div class="col-sm-12 col-lg-6 col-md-6" id="MaxQuantityDiv" @MaxQuantityCss>
+
+                                    <label>
+                                        <span id="lbl_old_disct_mazQuantity"> Max Quantity</span>
+                                        @*     <span class="text-danger">*</span>*@
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="Enter here the max quantity of total usage of this discount"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                    </label>
+                                    <input type="number" min="0" class="form-control" id="MaxQuantity" name="MaxQuantity" value="@(Model.DiscountObj.MaxQuantity)" placeholder="">
+
+                                </div>
+
+
+
+                            </div>
+
+                            <div class="form-group row">
+
+
+                                <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                    <label>
+                                        <span id="lbl_old_disct_isActive">Is Active</span>
+                                        <span class="text-danger">*</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="Enter here the title for discount"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+
+                                    </label>
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="IsActive" name="IsActive" @(Model!=null && Model.DiscountObj!=null && Model.DiscountObj.IsActive!=null && Model.DiscountObj.IsActive==true ? "checked" : "") class="form-check-input-styled-info" checked data-fouc>
+
+                                        </label>
+                                    </div>
+
+                                </div>
+
+
+
+
+                            </div>
+
+
+
+                        </fieldset>
+                    </div>
+
+                    <div class="tab-pane fade" id="discount-type-data-tab">
+                        <fieldset class="mb-3">
+
+
+
+                            <div class="row" id="discount_type_data_list">
+                            </div>
+
+
+                        </fieldset>
+                    </div>
+
+
+
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="row">
+            <div class="col-lg-12">
+
+                <div class="d-flex justify-content-end align-items-center">
+                    @*   <button type="reset" onclick="resetAnyFormById('data-insert-form');" class="btn btn-light" id="reset">Reset <i class="icon-reload-alt ml-2"></i></button>*@
+                    <button type="submit" onclick="UpdateFormRecord();" class="btn btn-primary ml-3"><span id="lbl_form_update_btn">Update</span> <i class="icon-paperplane ml-2"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+
+
+
+</div>
+
+
+<div id="ProductsModalArea">
+</div>
+
+<div id="CategoriesModalArea">
+</div>
+
+
+
+
+
+@section  Scripts{
+
+
+    <script src="~/js/module-specific-script/discount/discount.js"></script>
+
+    <script>
+
+
+        $(document).ready(function () {
+            //--call this function when page load for getting data according to DiscountTypeId
+            GetSelectedDiscountTypeData();
+        });
+
+
+        function UpdateFormRecord() {
+
+
+            // ✅ On formt submit,fire event prevent
+            $("#data-insert-form").submit(function (e) {
+                e.preventDefault();
+            });
+
+            // ✅ Check if form is valid
+            if (!$("#data-insert-form").valid()) {
+                event.preventDefault();
+                showSuccessErrorMsg("error", "Error", "Please fill all required fields!");
+                return false;
+            }
+
+
+
+            //-- #region All fields values getting area starts here
+
+            let DiscountId = $("#DiscountId").val();
+            if (!checkIfStringIsEmtpy(DiscountId)) {
+                event.preventDefault();
+                showSuccessErrorMsg("error", "Error", "Discount id is required!");
+                return false;
+            }
+
+            let Title = $("#Title").val();
+            let DiscountTypeId = $("#DiscountTypeId").val();
+            let DiscountValueType = $("#DiscountValueType").val();
+            let DiscountValue = $("#DiscountValue").val();
+            let StartDate = $("#StartDate").val();
+            let EndDate = $("#EndDate").val();
+
+            //--coupon code validation
+            let IsCouponCodeRequired = ($('#IsCouponCodeRequired').is(":checked") == true) ? true : false;
+            let CouponCode = $("#CouponCode").val();
+            if (IsCouponCodeRequired) {
+                if (!checkIfStringIsEmtpy(CouponCode)) {
+                    event.preventDefault();
+                    showSuccessErrorMsg("error", "Error", "Coupon code required!");
+                    return false;
+                }
+            }
+
+            //--bound to max quantity validation
+            let IsBoundToMaxQuantity = ($('#IsBoundToMaxQuantity').is(":checked") == true) ? true : false;
+            let MaxQuantity = $("#MaxQuantity").val();
+            if (IsBoundToMaxQuantity) {
+                if (!checkIfStringIsEmtpy(MaxQuantity)) {
+                    event.preventDefault();
+                    showSuccessErrorMsg("error", "Error", "Max quantity required!");
+                    return false;
+                }
+            }
+
+            let IsActive = ($('#IsActive').is(":checked") == true) ? true : false;
+
+            //-- #region All fields values getting area ends here
+
+
+            //--#Region product associated get values
+            var DiscountAssociatedProductsTableRows = [];
+            var DiscountAssociatedCategoriesTableRows = [];
+
+
+            switch (DiscountTypeId) {
+                case '@((short)DiscountTypesEnum.AppliedOnProducts)':
+
+                    $('.product-discount-row').each(function () {
+                        let data_discount_product_id = $(this).attr("data_discount_product_id");
+                        let data_discount_product_mapping_id = $(this).attr("data_discount_product_mapping_id");
+
+                        if (!checkIfStringIsEmtpy(data_discount_product_id) || !checkIfStringIsEmtpy(data_discount_product_mapping_id)) {
+                            return false;
+                        }
+                        DiscountAssociatedProductsTableRows.push({
+                            ProductId: data_discount_product_id,
+                            DiscountProductMappingID: data_discount_product_mapping_id
+
+                        });
+                    });
+
+                    if (DiscountAssociatedProductsTableRows.length == 0) {
+                        showSuccessErrorMsg("error", "Error", "Please add at least one product for this discount type!");
+                        return false;
+                    }
+
+                    break;
+                case '@((short)DiscountTypesEnum.AppliedOCategories)':
+
+                    $('.category-discount-row').each(function () {
+                        let data_discount_category_id = $(this).attr("data_discount_category_id");
+                        let data_discount_category_mapping_id = $(this).attr("data_discount_category_mapping_id");
+
+                        if (!checkIfStringIsEmtpy(data_discount_category_id) || !checkIfStringIsEmtpy(data_discount_category_mapping_id)) {
+                            return false;
+                        }
+                        DiscountAssociatedCategoriesTableRows.push({
+                            CategoryId: data_discount_category_id,
+                            DiscountCategoryMappingID: data_discount_category_mapping_id
+
+                        });
+                    });
+
+                    if (DiscountAssociatedCategoriesTableRows.length == 0) {
+                        showSuccessErrorMsg("error", "Error", "Please add at least one category for this discount type!");
+                        return false;
+                    }
+
+                    break;
+
+                default:
+                    DiscountAssociatedProductsTableRows = [];
+                    DiscountAssociatedCategoriesTableRows = [];
+
+            }
+
+
+            var DiscountAssociatedProductsJson = DiscountAssociatedProductsTableRows.length == 0 ? "[]" : JSON.stringify(DiscountAssociatedProductsTableRows);
+            var DiscountAssociatedCategoriesJson = DiscountAssociatedCategoriesTableRows.length == 0 ? "[]" : JSON.stringify(DiscountAssociatedCategoriesTableRows);
+
+            //--#endRegion product associated
+
+
+            //-- #region Form initialization area starts here
+            var fileData = new FormData();
+            fileData.append("DiscountId", DiscountId);
+            fileData.append("Title", Title);
+            fileData.append("DiscountTypeId", DiscountTypeId);
+            fileData.append("DiscountValueType", DiscountValueType);
+            fileData.append("DiscountValue", DiscountValue);
+            fileData.append("StartDate", StartDate);
+            fileData.append("EndDate", EndDate);
+            fileData.append("IsCouponCodeRequired", IsCouponCodeRequired);
+            fileData.append("CouponCode", CouponCode);
+            fileData.append("IsBoundToMaxQuantity", IsBoundToMaxQuantity);
+            fileData.append("MaxQuantity", MaxQuantity);
+            fileData.append("IsActive", IsActive);
+            fileData.append("DiscountAssociatedProductsJson", DiscountAssociatedProductsJson);
+            fileData.append("DiscountAssociatedCategoriesJson", DiscountAssociatedCategoriesJson);
+
+            //-- #endRegion Form initialization area ends here
+
+            let saveUrl = "@Url.Action("InsertUpdateDiscount", "Discounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: fileData,
+                success: function (data) {
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", data.message);
+
+                        setTimeout(function () {
+                            window.location.href = "@Url.Action("DiscountsList","Discounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+                        }, 1000);
+
+                    }
+                    else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showSuccessErrorMsg("error", "Error", "Something went wrong. Please try again");
+                }
+            });
+
+        }
+
+
+
+    </script>
+
+}

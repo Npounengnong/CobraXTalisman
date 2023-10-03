@@ -1,0 +1,503 @@
+﻿@model Entities.MainModels.ConfigurationModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+
+    #endregion
+}
+
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+
+
+    #region drop down area starts here
+    Dictionary<string, string>? LanguagesListIDs = new Dictionary<string, string>();
+    if (Model != null && Model.LanguagesList != null && Model.LanguagesList.Count > 0)
+    {
+        LanguagesListIDs = Model.LanguagesList.ToDictionary(v => v.LanguageId.ToString(), t => t.LanguageName);
+    }
+
+    //--drop down area
+    Dictionary<string, string>? EntityListSearchIDs = new Dictionary<string, string>();
+    if (Model != null && Model.EntityListSearchDropDown != null && Model.EntityListSearchDropDown.Count > 0)
+    {
+        EntityListSearchIDs = Model.EntityListSearchDropDown.ToDictionary(v => v.EntityId.ToString(), t => t.EntityName);
+    }
+    #endregion dropdown area ends here
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                EntityId = Model?.PageBasicInfoObj != null ? Model.PageBasicInfoObj.EntityId : 0,
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = true,
+                ShowActionsButton = false,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = false,
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @{
+                SearchFilterModel filter = new SearchFilterModel();
+
+                #region basic settings
+                filter.SearchJSFunctionName = "SearchRecord();";
+                filter.SearchButtonType = "button";
+                filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                filter.SearchURL = Url.Action("ScreensLocalizationSearch", "Configuration", new { langCode = Model?.PageBasicInfoObj?.langCode });
+                #endregion
+
+                filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+
+            new HtmlFormFieldsEntity(){ FieldID = "LanguageId", FieldName="LanguageId",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Language", LabelText="Language", ToolTipText="Select  language from drop down", IsRequired=true , DropdownData=LanguagesListIDs},
+            new HtmlFormFieldsEntity(){ FieldID = "EntityId", FieldName="EntityId",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Screen", LabelText="Screen Name", ToolTipText="Select  screen from drop down", DropdownData=EntityListSearchIDs},
+
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            @*  <div class="row">
+            <div class="col-lg-12">
+
+            <div class="d-flex justify-content-end align-items-center">
+            <button type="button" class="btn btn-primary btn-labeled btn-labeled-left" data-toggle="modal" data-target="#AddNewDataModal"><b><i class="icon-plus3"></i></b> Add New</button>
+            </div>
+            </div>
+            </div>*@
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/Configuration/PartialViews/_ScreensLocalizationSearch.cshtml", Model);
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Modals area Insert starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityInsert = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityInsert.ModalTitle = "Add Label";
+        htmlBootstrapModalEntityInsert.ModalDivId = "AddNewDataModal";
+        htmlBootstrapModalEntityInsert.SubmitBtnJsFunctionName = "SaveFormRecord();";
+        htmlBootstrapModalEntityInsert.SubmitButtonText = "Save";
+        htmlBootstrapModalEntityInsert.FormId = "data-insert-common-form";
+        htmlBootstrapModalEntityInsert.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+
+        htmlBootstrapModalEntityInsert.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+    new HtmlFormFieldsEntity(){ FieldID = "labelHtmlIdInsert", FieldName="labelHtmlIdInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Label Html ID", LabelText="Label Html ID", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "textInsert", FieldName="textInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Text", LabelText="Text" , IsRequired=true},
+    new HtmlFormFieldsEntity(){ FieldID = "descriptionInsert", FieldName="descriptionInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Description", LabelText="Description" , IsRequired=true},
+
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityInsert)
+
+    <!-- /Modals area Insert ends here-->
+    <!-- Modals area Edit starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityEdit = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityEdit.ModalTitle = "Update Label";
+        htmlBootstrapModalEntityEdit.ModalDivId = "EditDataModal";
+        htmlBootstrapModalEntityEdit.SubmitBtnJsFunctionName = "UpdateFormRecord();";
+        htmlBootstrapModalEntityEdit.SubmitButtonText = "Update";
+        htmlBootstrapModalEntityEdit.FormId = "data-edit-common-form";
+        htmlBootstrapModalEntityEdit.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+        htmlBootstrapModalEntityEdit.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+
+    new HtmlFormFieldsEntity(){ FieldID = "labelHtmlIdUpdate", FieldName="labelHtmlIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Label Html ID", LabelText="Label Html ID", IsRequired=true , IsReadOnly = true },
+    new HtmlFormFieldsEntity(){ FieldID = "textUpdate", FieldName="textUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Text", LabelText="Text" , IsRequired=true},
+    new HtmlFormFieldsEntity(){ FieldID = "descriptionUpdate", FieldName="descriptionUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Description", LabelText="Description" , IsRequired=true},
+    new HtmlFormFieldsEntity(){ FieldID = "ScrnLocalizationIdUpdate", FieldName="ScrnLocalizationIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden, IsRequired=true},
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityEdit)
+
+    <!-- /Modals area Edit ends here-->
+
+
+
+</div>
+@section  Scripts{
+
+    <script>
+
+        function SaveFormRecord() {
+
+            $("#data-insert-common-form").submit(function (e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-insert-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+            let labelHtmlId = $('#labelHtmlIdInsert').val();
+            let text = $('#textInsert').val();
+            let description = $('#descriptionInsert').val();
+            let LanguageId = $('#LanguageId').val();
+            let EntityId = $('#EntityId').val();
+
+
+            if (!checkIfStringIsEmtpy(labelHtmlId)) {
+                showSuccessErrorMsg("error", "Error", "Html id field is required!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(text)) {
+                showSuccessErrorMsg("error", "Error", "Text field is required!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(description)) {
+                showSuccessErrorMsg("error", "Error", "Description field is required!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(LanguageId)) {
+                showSuccessErrorMsg("error", "Error", "Please first select language in the search field!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(EntityId)) {
+                showSuccessErrorMsg("error", "Error", "Please first select screen in the search field!");
+                return false;
+            }
+
+           
+            let isLabelStartsWith = labelHtmlId.startsWith("lbl_");
+            if (isLabelStartsWith==false) {
+                showSuccessErrorMsg("error", "Error", "label html id should starts with 'lbl_'");
+                return false;
+            }
+
+            //--make form data
+            var formData = {
+                labelHtmlId: labelHtmlId,
+                text: text,
+                description: description,
+                LanguageId: LanguageId,
+                EntityId: EntityId,
+                DataOperationType: '@((short)DataOperationType.Insert)'
+            }
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            let saveUrl = "@Url.Action("SaveScreenLocalizationLabel", "Configuration" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                data: formData,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function (data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                        setTimeout(function () {
+
+                            $('#labelHtmlIdInsert').val("");
+                            $('#textInsert').val("");
+                            $('#descriptionInsert').val("");
+
+                            $('#AddNewDataModal').modal('hide');
+                            SearchRecord();
+                        }, 1000);
+                    } else {
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+
+        }
+
+        function UpdateFormRecord() {
+
+            $("#data-edit-common-form").submit(function (e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-edit-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+            let ScrnLocalizationId = $('#ScrnLocalizationIdUpdate').val();
+            let labelHtmlId = $('#labelHtmlIdUpdate').val();
+            let text = $('#textUpdate').val();
+            let description = $('#descriptionUpdate').val();
+
+            if (!checkIfStringIsEmtpy(labelHtmlId)) {
+                showSuccessErrorMsg("error", "Error", "Html id field is required!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(text)) {
+                showSuccessErrorMsg("error", "Error", "Text field is required!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(description)) {
+                showSuccessErrorMsg("error", "Error", "Description field is required!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(ScrnLocalizationId)) {
+                showSuccessErrorMsg("error", "Error", "Screen localization id is empty for this row!");
+                return false;
+            }
+
+            let isLabelStartsWith = labelHtmlId.startsWith("lbl_");
+            if (isLabelStartsWith == false) {
+                showSuccessErrorMsg("error", "Error", "label html id should starts with 'lbl_'");
+                return false;
+            }
+
+            //--make form data
+            var formData = {
+                ScrnLocalizationId: ScrnLocalizationId,
+                labelHtmlId: labelHtmlId,
+                text: text,
+                description: description,
+                DataOperationType: '@((short)DataOperationType.Update)'
+            }
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            let updateUrl = "@Url.Action("UpdateScreenLocalizationLabel", "Configuration" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: updateUrl,
+                data: formData,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function (data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                        setTimeout(function () {
+                            $('#EditDataModal').modal('hide');
+                            SearchRecord();
+                        }, 1000);
+                    } else {
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+
+        }
+
+        function showEditModal(
+            ScrnLocalizationId,
+            labelHtmlId,
+            text,
+            description) {
+
+
+            //--first empty fields
+            $('#ScrnLocalizationIdUpdate').val("");
+            $('#labelHtmlIdUpdate').val("");
+            $('#textUpdate').val("");
+            $('#descriptionUpdate').val("");
+
+            $('#ScrnLocalizationIdUpdate').val(ScrnLocalizationId);
+            $('#labelHtmlIdUpdate').val(labelHtmlId);
+            $('#textUpdate').val(text);
+            $('#descriptionUpdate').val(description);
+
+
+
+            $('#EditDataModal').modal('show');
+
+        }
+
+
+        function showDeleteConfirmation(ScrnLocalizationId, labelHtmlId) {
+            debugger
+            let isConfimr = confirm("Do you really want to delete this label?");
+            if (isConfimr == true) {
+                //--make form data
+                var formData = {
+                    ScrnLocalizationId: ScrnLocalizationId,
+                    labelHtmlId: labelHtmlId,
+                    DataOperationType: '@((short)DataOperationType.Delete)'
+                }
+
+                // ✅ Show loader area starts here
+                showHideSiteMainLoader(true);
+                // ✅ Show loader area ends here
+
+                let deleteUrl = "@Url.Action("DeleteScreenLocalizationLabel", "Configuration" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+                $.ajax({
+                    type: "POST",
+                    url: deleteUrl,
+                    data: formData,
+                    // datatype: "json",
+                    cache: false,
+                    async: false,
+
+                    success: function (data) {
+                        debugger
+                        console.log(data);
+                        if (data.success) {
+                            showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                            setTimeout(function () {
+                                SearchRecord();
+                            }, 1000);
+                        } else {
+                            showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                        }
+
+                        // ✅ Stop loader area starts here
+                        let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                        setTimeout(function () {
+                            showHideSiteMainLoader(false);
+                        }, LoaderTimeDuration ?? 2000);
+                        // ✅ Stop loader area ends here
+
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+
+                        // ✅ Stop loader area starts here
+                        let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                        setTimeout(function () {
+                            showHideSiteMainLoader(false);
+                        }, LoaderTimeDuration ?? 2000);
+                        // ✅ Stop loader area ends here
+                    }
+                })
+            }
+        }
+
+    </script>
+
+}

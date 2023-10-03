@@ -1,0 +1,137 @@
+﻿@model Entities.MainModels.DiscountModel
+
+
+<div class="col-lg-12 col-md-12">
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @*  @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+            <div class="list-icons">
+            <a class="list-icons-item" data-action="collapse"></a>
+
+            </div>
+            </div>*@
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+
+            <div class="row">
+
+                <div class="col-lg-12">
+                    <div class="d-flex">
+
+                        <button type="button" onclick="ShowAllCategoriesForDiscount();" class="btn bg-blue ml-3"> <span id="disct_add_categories">Add Categories </span><i class="icon-paperplane ml-2"></i></button>
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+<div class="col-lg-12 col-md-12">
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            <h5 class="card-title"><i class="icon-list mr-2"></i><span id="disct_associated_categories">Associated Categories List</span> </h5>
+            <div class="header-elements">
+                @*  <div class="list-icons">
+                <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>*@
+            </div>
+        </div>
+
+        <div class="card-body">
+
+
+            <table class="table site-table-listing" id="discount_selected_categories">
+                <thead>
+                    <tr>
+                        <th id="lbl_hdr_discntCatgId"> Category Id</th>
+                        <th id="lbl_hdr_discntName">  Name</th>
+                        <th id="lbl_hdr_discntParntCatg"> Parent Category</th>
+
+
+                        <th class="text-center" style="width: 20px;"><i class="icon-arrow-down12"></i></th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @{
+                        if (Model != null && Model.DiscountCategoriesMappingList != null && Model.DiscountCategoriesMappingList.Count > 0)
+                        {
+                            foreach (var item in Model.DiscountCategoriesMappingList)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="hidden" class="category-discount-row" data_discount_category_id="@item.CategoryId" data_discount_category_mapping_id="@item.DiscountCategoryMappingId">
+                                        
+                                        @item.CategoryId
+                                    </td>
+                                    <td> @item.Name</td>
+                                    <td> @item.ParentCategoryName</td>
+                                    <td><div class=""><a href="#!" class="dropdown-item text-pink-600" onclick="DeleteCategoryFromDiscountList( this,'@item.DiscountCategoryMappingId');"><i class="icon-trash"></i> Delete</a></div> </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr id="category_discounted_no_data_row">
+                                <td class="text-center" colspan="20"><b>  No record found </b></td>
+
+                            </tr>
+
+
+                        }
+                    }
+
+
+                </tbody>
+            </table>
+
+
+
+        </div>
+    </div>
+
+
+
+
+
+</div>
+
+
+
+
+
+
+<div class="row" id="pagination_div">
+
+    @{
+        if (Model != null && Model.pageHelperObj != null)
+        {
+            PagerHelper ph = new PagerHelper();
+            ph.CurrentPage = Model.pageHelperObj.CurrentPage;
+            ph.TotalRecords = Model.pageHelperObj.TotalRecords;
+            ph.RecordsPerPage = Model.pageHelperObj.RecordsPerPage;
+            ph.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+            ph.PageUrl = Url.Action("DiscountsList", "Discounts", new { langCode = Model?.PageBasicInfoObj?.langCode });
+
+            ph.AjaxEnabled = true;
+            ph.OnClientClickAjaxCall = "PaginationAfterAjax(this)";
+
+            @await Html.PartialAsync("~/Views/Common/_Pager.cshtml", ph)
+        }
+
+    }
+
+
+</div>
+
+

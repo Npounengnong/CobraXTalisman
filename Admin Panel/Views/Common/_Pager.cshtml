@@ -1,0 +1,160 @@
+﻿@model Entities.CommonModels.PagerHelper
+
+@{
+
+    string PageUrl = Model != null && !String.IsNullOrWhiteSpace(Model.PageUrl) ? Model.PageUrl : "/";
+    string languageCode = await sessionManager.GetLanguageCodeFromSession();
+}
+
+
+<input type="hidden" id="CurrentPage" name="CurrentPage" value="@Model.CurrentPage" />
+
+<div class="col-lg-6 col-md-6" style="float:left;">
+    @{
+        if (Model.TotalRecords > 0)
+        {
+            int startRange = (Model.CurrentPage - 1) * Model.RecordsPerPage + 1;
+            int endRange = (Model.CurrentPage) * Model.RecordsPerPage;
+
+            if (endRange > Model.TotalRecords)
+            {
+                endRange = Model.TotalRecords;
+            }
+
+
+            string LabelTotalEntries = String.Format("Showing {0} to {1} of {2} entries", startRange, endRange, Model.TotalRecords);
+
+            //<div @((Model.TotalPages == 1) ? "style=display:none;" : "")>
+            //    <label style="font-size: 16px;">@LabelTotalEntries</label>
+            //</div>
+
+            <div class="dataTables_info" id="DataTables_Table_2_info" role="status" aria-live="polite" @((Model.TotalPages == 1) ? "style=display:none;" : "")>
+                @LabelTotalEntries
+            </div>
+
+        }
+
+    }
+</div>
+
+<div class="col-lg-6 col-md-6 text-center" style="float:right;">
+    <ul class="pagination pagination-sm mb-1 mt-2 align-self-center justify-content-end" @((Model.TotalPages == 1) ? "style=display:none;" : "")>
+
+
+
+        @{
+            if (Model.ShowFirstPrevLinks)
+            {
+                <li class="page-item">
+                    <a href="#!" onclick="@Model.OnClientClickAjaxCall" rel="@(Model.StartPageNumber - 1)" class="page-link"><i class="icon-arrow-left7"></i></a>
+                </li>
+            }
+        }
+
+        @{
+            for (int linkForPgCounter = Model.StartPageNumber; linkForPgCounter <= Model.EndPageNumber; linkForPgCounter++)
+            {
+                if (linkForPgCounter == Model.CurrentPage)
+                {
+                    <li class="page-item active"><a class="page-link" href="#!">@linkForPgCounter</a></li>
+                }
+                else
+                {
+                    <li class="page-item"><a href="#!" onclick="@Model.OnClientClickAjaxCall" rel="@(linkForPgCounter)" class="page-link">@linkForPgCounter</a></li>
+                }
+            }
+        }
+
+        @{
+            if (Model.ShowNextLastLinks)
+            {
+                <li class="page-item">
+                    <a href="#!" onclick="@Model.OnClientClickAjaxCall" rel="@(Model.EndPageNumber + 1)" class="page-link"><i class="icon-arrow-right13"></i></a>
+                </li>
+            }
+        }
+
+    </ul>
+</div>
+
+
+
+
+
+<script>
+
+    function PaginationAfterAjax(thisValue) {
+
+
+        let searchFormData = {};
+
+        $.each($('#searchform :input').not(".date-filter-exclude").serializeArray(), function (i, field) { //--exclue fields with class name "date-filter-exclude" bcz we are setting it manually
+            let fieldName = $.trim(field.name);
+            let fieldValue = $.trim(field.value);
+            searchFormData[fieldName] = fieldValue;
+        })
+
+        if ($('#FromDate').length > 0 && checkIfStringIsEmtpy($('#FromDate').val())) {
+            let FromDateOriginalValue = $('#FromDate').val();
+            let FromDate = formatDateToSQLFormat(FromDateOriginalValue);
+            searchFormData["FromDate"] = FromDate;
+        }
+
+        if ($('#ToDate').length > 0 && checkIfStringIsEmtpy($('#ToDate').val())) {
+            let ToDateOriginalValue = $('#ToDate').val();
+            let ToDate = formatDateToSQLFormat(ToDateOriginalValue);
+            searchFormData["ToDate"] = ToDate;
+        }
+
+        searchFormData["PageNo"] = $(thisValue).attr('rel');
+
+        var Url = '@PageUrl';
+
+
+        // ✅ Show loader area starts here
+        showHideSiteMainLoader(true);
+        // ✅ Show loader area ends here
+
+
+        $.ajax({
+            type: "GET",
+            url: Url,
+            data: searchFormData,
+            // datatype: "json",
+            cache: false,
+            async: false,
+
+            success: function (data) {
+                $('#main_data_table').html(data);
+
+                // ✅ Stop loader area starts here
+                let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                setTimeout(function () {
+                    showHideSiteMainLoader(false);
+                }, LoaderTimeDuration ?? 2000);
+                // ✅ Stop loader area ends here
+
+                let languageCode = "@languageCode";
+                let EntityId = @(Model?.EntityId ?? 0);
+                GetLocalizationControlsJsonDataForScreen(EntityId, languageCode, "main_data_table");
+
+
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //toastr.error('An error occured. Please try again!');
+
+                // ✅ Stop loader area starts here
+                let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                setTimeout(function () {
+                    showHideSiteMainLoader(false);
+                }, LoaderTimeDuration ?? 2000);
+                // ✅ Stop loader area ends here
+
+            }
+        })
+
+    }
+
+
+</script>
+

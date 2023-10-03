@@ -1,0 +1,42 @@
+﻿
+
+<div id="DeleteRecordModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header site-bg-modal-header">
+                <h5 class="modal-title">Delete</h5>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+            </div>
+
+            <form method="post" asp-area="" asp-controller="Dynamic" asp-action="DeleteAnyRecord">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+
+                    @*<h6>Do you want to delete this record?</h6>*@
+
+                    <div class="alert alert-warning alert-styled-left" style="background-color: #ffffff !important;">
+
+                        <a href="#" class="alert-link">Do you want to delete this record?</a>
+                    </div>
+
+                    <input type="hidden" id="entityIdDeleteValue" name="entityIdDeleteValue" value="0" />
+                    <input type="hidden" id="primarykeyValue" name="primarykeyValue" value="0" />
+                    <input type="hidden" id="primaryKeyColumn" name="primaryKeyColumn" value="" />
+                    <input type="hidden" id="tableName" name="tableName" value="" />
+                    <input type="hidden" id="SqlDeleteType" name="SqlDeleteType"  />
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline bg-teal-400 text-teal-400 border-teal-400 border-2" onclick='clearDeleteModalData();' data-dismiss="modal">Close</button>
+
+                    <button type="button" class="btn bg-teal-400 btn-labeled" onclick="deleteRecordDynamic();"><i class="icon-trash-alt mr-2"></i> Delete</button>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+

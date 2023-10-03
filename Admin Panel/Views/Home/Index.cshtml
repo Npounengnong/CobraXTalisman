@@ -1,0 +1,191 @@
+﻿@model Entities.MainModels.HomeModel
+
+@{
+    ViewData["Title"] = "Home Page";
+    string languageCode = await sessionManager.GetLanguageCodeFromSession();
+}
+
+<!--importing am chart libraries-->
+@await Html.PartialAsync("~/Views/Common/PartialViews/_AmChartScript.cshtml")
+
+
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                PageTitle = "Dashboard",
+                ShowAddNewButton = false,
+                ShowActionsButton = false,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = false,
+            };
+
+    pageHeader.HtmlTagsList = new List<HtmlTags>()
+            {
+            new HtmlTags(){ FieldID = "HomeSearchButton", FieldName="HomeSearchButton",  TagType = "Button", PlaceHolderText="Search Options", LabelText="Search Options" , HtmlClass = "btn bg-teal-400 btn-labeled btn-labeled-left" , FieldOnClickFunction="OpenSearchModal();" , IconClass="icon-search4 mr-1"},
+
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+
+<div class="content" id="dashboar_charts_area">
+</div>
+
+
+
+<!-- Search Modal-->
+@{
+    HtmlBootstrapModalEntity htmlBootstrapModalEntityEdit = new HtmlBootstrapModalEntity();
+
+    htmlBootstrapModalEntityEdit.ModalTitle = "Search Options";
+    htmlBootstrapModalEntityEdit.ModalDivId = "home_search_modal";
+    htmlBootstrapModalEntityEdit.SubmitBtnJsFunctionName = "FilterDashboardData();";
+    htmlBootstrapModalEntityEdit.SubmitButtonText = "Search";
+    htmlBootstrapModalEntityEdit.FormId = "data-edit-common-form";
+    htmlBootstrapModalEntityEdit.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+    htmlBootstrapModalEntityEdit.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+
+
+     new HtmlFormFieldsEntity(){ FieldID = "FromDate", FieldName="FromDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="From Date", LabelText="From Date", ToolTipText="Pick a date from where you want to search record"},
+     new HtmlFormFieldsEntity(){ FieldID = "ToDate", FieldName="ToDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="To Date", LabelText="To Date", ToolTipText="Pick a date from where you want to search record"},
+
+    };
+}
+
+@await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityEdit)
+
+<!-- /Modals area Edit ends here-->
+@section  Scripts{
+
+    <script>
+
+
+        $(document).ready(function() {
+            GetDashboardChartsData();
+        });
+
+
+
+        function GetDashboardChartsData() {
+
+            let FormData = {
+                FromDate: '',
+                ToDate: '',
+            };
+
+
+            var Url = "@Url.Action("GetDashboardChartsData", "Home" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+            $.ajax({
+                type: "GET",
+                url: Url,
+
+                data: FormData,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function(data) {
+                    $('#dashboar_charts_area').html(data);
+
+
+                    let languageCode = "@languageCode";
+                    let EntityId = @(Model?.PageBasicInfoObj?.EntityId ?? 0);
+                    GetLocalizationControlsJsonDataForScreen(EntityId, languageCode, "main_body_content");
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+        }
+
+
+        function OpenSearchModal() {
+
+
+            $('#home_search_modal').modal('show');
+
+        }
+
+
+        function FilterDashboardData() {
+            event.preventDefault();
+
+            let searchFormData = {};
+
+
+            if ($('#FromDate').length > 0 && checkIfStringIsEmtpy($('#FromDate').val())) {
+                let FromDateOriginalValue = $('#FromDate').val();
+                let FromDate = formatDateToSQLFormat(FromDateOriginalValue);
+                searchFormData["FromDate"] = FromDate;
+            }
+
+            if ($('#ToDate').length > 0 && checkIfStringIsEmtpy($('#ToDate').val())) {
+                let ToDateOriginalValue = $('#ToDate').val();
+                let ToDate = formatDateToSQLFormat(ToDateOriginalValue);
+                searchFormData["ToDate"] = ToDate;
+            }
+
+            if((searchFormData.FromDate==undefined || searchFormData.FormData=="") && (searchFormData.ToDate==undefined || searchFormData.ToDate=="")){
+                 showSuccessErrorMsg("error", "Error", "Please select any date!");
+                return false;
+            }
+
+            var Url = '@Url.Action("GetDashboardChartsData", "Home" , new { langCode = Model?.PageBasicInfoObj?.langCode })';
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+
+            $.ajax({
+                type: "GET",
+                url: Url,
+
+                data: searchFormData,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function(data) {
+                    $('#dashboar_charts_area').html(data);
+                    $('#home_search_modal').modal('hide');
+
+                    let languageCode = "@languageCode";
+                    let EntityId = @(Model?.PageBasicInfoObj?.EntityId ?? 0);
+                    GetLocalizationControlsJsonDataForScreen(EntityId, languageCode, "main_body_content");
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                    $('#home_search_modal').modal('hide');
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+        }
+
+    </script>
+
+  }

@@ -1,0 +1,72 @@
+﻿
+@{
+    int ItemsPerPage = ConstantsHelper.ITEMS_PER_PAGE();
+
+    List<SelectListItem> ItemsPerPageList = new List<SelectListItem>();
+    ItemsPerPageList.Add(new SelectListItem { Value = "10", Text = "10" });
+    ItemsPerPageList.Add(new SelectListItem { Value = "25", Text = "25" });
+    ItemsPerPageList.Add(new SelectListItem { Value = "50", Text = "50" });
+    ItemsPerPageList.Add(new SelectListItem { Value = "100", Text = "100" });
+
+}
+
+
+<div class="form-group row">
+    <label class="col-form-label col-lg-1 col-md-1 col-sm-4" id="lbl_datatable_length_show">Show:</label>
+    <div class="col-lg-2 col-md-2 col-sm-8">
+        <select name="itemsPerPage" id="itemsPerPage" class="form-control" onchange="changeDataTableLength();">
+            @foreach (var item in ItemsPerPageList)
+            {
+                if (ItemsPerPage.ToString() == item.Value)
+                {
+                    <option value="@item.Value" selected>@item.Text</option>
+                }
+                else
+                {
+                    <option value="@item.Value">@item.Text</option>
+                }
+            }
+        </select>
+    </div>
+</div>
+
+
+<script>
+
+
+ function changeDataTableLength() {
+    var itemsPerPage = $('#itemsPerPage').val();
+     var Url = '@Url.Action("ChangeDataTableLength", "Dynamic" , new { langCode = Model?.PageBasicInfoObj?.langCode })';
+
+     $.ajax({
+            type: "POST",
+            url: Url,
+            data: {
+                    itemsPerPage: itemsPerPage
+                },
+            // datatype: "json",
+            cache: false,
+            async: false,
+
+            success: function (data) {
+                console.log(data);
+                if (data.success) {
+               // showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                setTimeout(function () {
+                   // location.reload();
+                   SearchRecord(); //--This function is declared in _SearchFilter.chsmtl file
+                   
+                }, 400);
+                } else {
+                showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                }
+
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+            }
+      })
+ }
+
+
+</script>

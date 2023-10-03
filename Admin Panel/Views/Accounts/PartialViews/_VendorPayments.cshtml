@@ -1,0 +1,180 @@
+﻿@model Entities.MainModels.AccountsModel
+
+@{
+    bool hasUpdateRecordRight = true;
+
+    if (Model != null && Model.PageBasicInfoObj != null && Model.PageBasicInfoObj.EntityId > 0)
+    {
+        List<RoleRightEntity>? UserRolesRights = sessionManager != null ? await sessionManager.GetUserRoleRightsFromSession() : new List<RoleRightEntity>();
+        hasUpdateRecordRight = UserRolesRights != null && UserRolesRights.Count > 0 && UserRolesRights.Any(x => x.EntityId == Model?.PageBasicInfoObj?.EntityId && x.RightId == (short)UserRightsEnum.Update) ? true : false;
+    }
+
+}
+
+<style>
+    .order-item-total-area{
+        border: 1px solid #8e24aa;
+        padding: 2px 7px;
+        border-radius: 3px;
+    }
+    .order-item-total-commission-area{
+        border: 1px solid #ba68c8;
+        padding: 2px 7px;
+        border-radius: 3px;
+    }
+</style>
+
+@await Html.PartialAsync("~/Views/Common/_DataTableLength.cshtml")
+
+<table class="table site-table-listing">
+    <thead>
+        <tr>
+            <th id="lbl_hdr_vndrId"> Vendor ID</th>
+            <th id="lbl_hdr_vndrFstName">First Name</th>
+            <th id="lbl_hdr_vndrLstName"> Last Name</th>
+            <th id="lbl_hdr_vndrOrdId">OrderId</th>
+            <th id="lbl_hdr_vndrItemTotal"> Item Total</th>
+            <th id="lbl_hdr_vndrItemTotalAfterCommis" style="width:1px; white-space:nowrap;"> Item Total After Comm</th>
+            <th id="lbl_hdr_vndrOrdTotal"> Order Total</th>
+            <th id="lbl_hdr_vndrOrdTotalAfterCommis"> Order Total After Comm</th>
+
+            <th id="lbl_hdr_vndrTotal"> Vendor Total</th>
+            <th id="lbl_hdr_vndrReceived"> Received</th>
+            <th id="lbl_hdr_vndrBal"> Balance</th>
+            <th id="lbl_hdr_bndrDetail"> Detail</th>
+
+
+        </tr>
+    </thead>
+    <tbody>
+
+        @{
+            if (Model != null && Model.VendorsPaymentsList != null && Model.VendorsPaymentsList.Count > 0)
+            {
+                foreach (var item in Model.VendorsPaymentsList)
+                {
+                    var OrderItemDetail = Model.VendorsPaymentsList.Where(i => i.OrderId == item.OrderId).ToList();
+
+                    <tr>
+                        <td><span class="text-dark">@item.VendorId</span></td>
+                        <td><span class="text-dark">@item.VendorFirstName</span></td>
+                        <td><span class="text-dark">@item.VendorLastName</span></td>
+                        <td><span class="text-dark">@item.OrderId</span></td>
+
+
+                        <td>
+                            <ul class="list list-unstyled mb-0 order-item-total-area">
+                                @foreach (var itemDetail in OrderItemDetail)
+                                {
+
+                                    <li>
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <div>
+
+                                                @itemDetail.OrderItemTotal
+                                            </div>
+
+                                        </div>
+
+                                    </li>
+
+                                }
+
+                            </ul>
+
+                        </td>
+                        <td>
+
+
+
+                            <ul class="list list-unstyled mb-0 order-item-total-commission-area">
+
+                                @foreach (var itemDetail in OrderItemDetail)
+                                {
+
+                                    <li>
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <div>
+
+                                                @Math.Round(itemDetail.OrderItemTotalAfterCommission,2) &nbsp; (@item.CommissionValue %)
+                                            </div>
+
+                                        </div>
+
+
+                                    </li>
+
+                                }
+
+                            </ul>
+
+                        </td>
+                        <td><span class="text-dark">@Math.Round(OrderItemDetail.Sum(s=>s.OrderItemTotal),2)</span></td>
+                        <td>
+                            <a href="#" class="text-purple font-weight-semibold">@Math.Round(OrderItemDetail.Sum(s=>s.OrderItemTotalAfterCommission),2)</a>
+                        </td>
+                        <td><span class="text-dark">@item.VendorOrdersTotal</span></td>
+                        <td><span class="text-dark">@item.TotalReceived</span></td>
+                        <td>
+                            <h6 class="font-weight-semibold mb-0"> @item.TotalBalance</h6>
+                        </td>
+
+
+
+                        <td class="text-center">
+                            <div class="">
+                                @if (hasUpdateRecordRight)
+                                {
+                                    <a href="@Url.Action("VendorAccountsTransaction","Accounts", new {langCode = Model?.PageBasicInfoObj?.langCode,VendorId=item.VendorId})" class="dropdown-item text-indigo-600"><i class="icon-eye"></i>View</a>
+                                }
+
+                            </div>
+                        </td>
+
+
+
+
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="text-center" colspan="20"><b>  No record found </b></td>
+
+                </tr>
+            }
+        }
+
+
+
+
+    </tbody>
+</table>
+
+
+
+<div class="row" id="pagination_div">
+
+    @{
+        if (Model != null && Model.pageHelperObj != null)
+        {
+            PagerHelper ph = new PagerHelper();
+            ph.CurrentPage = Model.pageHelperObj.CurrentPage;
+            ph.TotalRecords = Model.pageHelperObj.TotalRecords;
+            ph.RecordsPerPage = Model.pageHelperObj.RecordsPerPage;
+            ph.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+            ph.PageUrl = Url.Action("VendorPayments", "Accounts", new { langCode = Model?.PageBasicInfoObj?.langCode });
+
+            ph.AjaxEnabled = true;
+            ph.OnClientClickAjaxCall = "PaginationAfterAjax(this)";
+
+            @await Html.PartialAsync("~/Views/Common/_Pager.cshtml", ph)
+        }
+
+    }
+
+
+</div>
+
+

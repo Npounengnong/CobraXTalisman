@@ -1,0 +1,293 @@
+﻿@model Entities.MainModels.AccountsModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+}
+
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                EntityId = Model?.PageBasicInfoObj != null ? Model.PageBasicInfoObj.EntityId : 0,
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = false,
+                AddNewButtonType = "OpenNewLink",
+                ShowActionsButton = true,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = true,
+                DataExportUrl = Url.Action("VendorsCommissionSetup", "Accounts", new { langCode = Model?.PageBasicInfoObj?.langCode })
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @{
+                SearchFilterModel filter = new SearchFilterModel();
+
+                #region basic settings
+                filter.SearchJSFunctionName = "SearchRecord();";
+                filter.SearchButtonType = "button";
+                filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                filter.SearchURL = Url.Action("VendorsCommissionSetup", "Accounts" , new { langCode = Model?.PageBasicInfoObj?.langCode });
+                #endregion
+
+                filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+            new HtmlFormFieldsEntity(){ FieldID = "UserId", FieldName="UserId",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Vendor Id", LabelText="Vendor Id", ToolTipText="Enter here the vendor id (user id)", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "FirstName", FieldName="FirstName",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="First Name", LabelText="First Name", ToolTipText="Enter here first name", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "LastName", FieldName="LastName",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Last Name", LabelText="Last Name", ToolTipText="Enter here last name", DropdownData=null},
+         
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/Accounts/PartialViews/_VendorsCommissionSetup.cshtml", Model)
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Modals area Edit starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityEdit = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityEdit.ModalTitle = "Update Vendor Commission";
+        htmlBootstrapModalEntityEdit.ModalDivId = "EditDataModal";
+        htmlBootstrapModalEntityEdit.SubmitBtnJsFunctionName = "UpdateFormRecord();";
+        htmlBootstrapModalEntityEdit.SubmitButtonText = "Update";
+        htmlBootstrapModalEntityEdit.FormId = "data-edit-common-form";
+        htmlBootstrapModalEntityEdit.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+        htmlBootstrapModalEntityEdit.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+    new HtmlFormFieldsEntity(){ FieldID = "CommissionValueUpdate", FieldName="CommissionValueUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Commission Value", LabelText="Commission Value (%)", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "IsActiveUpdate", FieldName="IsActiveUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden,  DefaultValue = "true" ,  DropdownData=null},
+    new HtmlFormFieldsEntity(){ FieldID = "ApplicableFromUpdate", FieldName="ApplicableFromUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="Applicable From", LabelText="Applicable From", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "ApplicableToUpdate", FieldName="ApplicableToUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="Applicable To", LabelText="Applicable To", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "UserIdUpdate", FieldName="UserIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden},
+    new HtmlFormFieldsEntity(){ FieldID = "VendorCommissionIdUpdate", FieldName="VendorCommissionIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden},
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityEdit)
+
+    <!-- /Modals area Edit ends here-->
+
+
+</div>
+@section  Scripts{
+
+<script>
+        function UpdateFormRecord() {
+
+            $("#data-edit-common-form").submit(function (e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-edit-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+            let CommissionValue = $('#CommissionValueUpdate').val();
+            let IsActive = $('#IsActiveUpdate').val();
+            let ApplicableFrom = $('#ApplicableFromUpdate').val();
+            let ApplicableTo = $('#ApplicableToUpdate').val();
+            let UserId = $('#UserIdUpdate').val();
+            let VendorCommissionId = $('#VendorCommissionIdUpdate').val();
+
+            if (!checkIfStringIsEmtpy(CommissionValue)) {
+                showSuccessErrorMsg("error", "Error", "Please enter commission value!");
+                return false;
+            }
+
+            if (CommissionValue < 0 || CommissionValue > 99) {
+                showSuccessErrorMsg("error", "Error", "Commission value should be b/w 0-99");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(ApplicableFrom)) {
+                showSuccessErrorMsg("error", "Error", "Enter applicable from date!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(ApplicableTo)) {
+                showSuccessErrorMsg("error", "Error", "Enter applicable to date!");
+                return false;
+            }
+
+
+            if (!checkIfStringIsEmtpy(IsActive)) {
+                showSuccessErrorMsg("error", "Error", "Please fill status field!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(UserId)) {
+                showSuccessErrorMsg("error", "Error", "User id is null!");
+                return false;
+            }
+
+         
+
+            //--make form data
+            var formDate = {
+                CommissionValue: CommissionValue,
+                IsActive: IsActive,
+                ApplicableFrom: ApplicableFrom,
+                ApplicableTo: ApplicableTo,
+                UserId: UserId,
+                VendorCommissionId: VendorCommissionId,
+                DataOperationType: '@((short)DataOperationType.Update)'
+            }
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            let updateUrl = "@Url.Action("UpdateVendorCommission", "Accounts" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: updateUrl,
+                data: formDate,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function (data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Updated Successfully!");
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
+                    } else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+
+        }
+
+        function showEditModal(UserId, VendorCommissionId, CommissionValue, ApplicableFrom, ApplicableTo) {
+        
+            //--First empty the old values
+            $('#UserIdUpdate').val("");
+            $('#VendorCommissionIdUpdate').val("");
+            $('#CommissionValueUpdate').val("");
+            $('#ApplicableFromUpdate').val("");
+            $('#ApplicableToUpdate').val("");
+
+
+            $('#UserIdUpdate').val(UserId);
+            $('#VendorCommissionIdUpdate').val(VendorCommissionId);
+            $('#CommissionValueUpdate').val(CommissionValue);
+
+            $('#IsActiveUpdate').val('true');
+           
+            $('#ApplicableFromUpdate').val(ApplicableFrom);
+            $('#ApplicableToUpdate').val(ApplicableTo);
+
+
+            $('#EditDataModal').modal('show');
+
+        }
+
+
+</script>
+
+}

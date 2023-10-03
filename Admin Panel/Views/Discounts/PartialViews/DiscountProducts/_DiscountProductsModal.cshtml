@@ -1,0 +1,72 @@
+﻿@model Entities.MainModels.DiscountModel
+
+
+@{
+     //--drop down area
+    Dictionary<string, string>? CategoryIDs = new Dictionary<string, string>();
+    if (Model != null && Model.CategoryList != null && Model.CategoryList.Count > 0)
+    {
+        foreach (var item in Model.CategoryList)
+        {
+            string? ParentCategory = Model.CategoryList.Where(c => c.CategoryId == item.ParentCategoryId).Select(c => c.Name).FirstOrDefault();
+            string? Category = String.IsNullOrWhiteSpace(ParentCategory) ? item.Name : ParentCategory + " >> " + item.Name;
+            item.Name = Category;
+        }
+
+        CategoryIDs = Model != null && Model.CategoryList != null && Model.CategoryList.Count > 0 ?
+        Model.CategoryList.ToDictionary(v => v.CategoryId.ToString(), t => t.Name) : null;
+
+    }
+}
+
+
+<!-- Full width modal -->
+<div id="modal_full_products_discount" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-full">
+        <div class="modal-content">
+            <div class="modal-header site-bg-modal-header">
+                <h5 class="modal-title" id="modal_products_title">Products List</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+
+                <!-- Page search form -->
+                @{
+                    SearchFilterModel filter = new SearchFilterModel();
+
+                    #region basic settings
+                    filter.SearchJSFunctionName = "SearchRecord();";
+                    filter.SearchButtonType = "button";
+                    filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                    filter.SearchURL = Url.Action("ShowAllProductsForDiscount", "Discounts", new { langCode = Model?.PageBasicInfoObj?.langCode });
+                    #endregion
+
+                    filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+                {
+                new HtmlFormFieldsEntity(){ FieldID = "ProductId", FieldName="ProductId",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Product Id", LabelText="Product Id", ToolTipText="Enter here the product id", DropdownData=null},
+                new HtmlFormFieldsEntity(){ FieldID = "ProductName", FieldName="ProductName",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Product Name", LabelText="Product Name", ToolTipText="Enter here product name", DropdownData=null},
+                new HtmlFormFieldsEntity(){ FieldID = "CategoryId", FieldName="CategoryId",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Category",DropdownSelectType=(short)HtmlDropdownSelectType.Simple  , LabelText="Category Id", ToolTipText="Select  category id from the drop down", DropdownData=CategoryIDs},
+                new HtmlFormFieldsEntity(){ FieldID = "IsDiscountCreatePageSearchEnabled", FieldName="IsDiscountCreatePageSearchEnabled",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden, DefaultValue="true"},
+            
+                };
+                }
+
+                @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+                <!-- /page search form -->
+
+
+                <div class="table-responsive" id="main_data_table">
+                    @await Html.PartialAsync("~/Views/Discounts/PartialViews/DiscountProducts/_DiscountProductsList.cshtml", Model)
+                </div>
+
+
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+<!-- /full width modal -->

@@ -1,0 +1,411 @@
+﻿@model Entities.MainModels.BasicDataModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+}
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+
+    //--drop down area
+    Dictionary<string, string>? ParentCategoryIDs = new Dictionary<string, string>();
+    ParentCategoryIDs = Model != null && Model.ParentCategoryList != null && Model.ParentCategoryList.Count > 0 ?
+    Model.ParentCategoryList.Where(c => c.ParentCategoryId == null).ToList().ToDictionary(v => v.CategoryId.ToString(), t => t.Name) : null;
+
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                EntityId = Model?.PageBasicInfoObj != null ? Model.PageBasicInfoObj.EntityId : 0,
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = true,
+                ShowActionsButton = true,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = true,
+                DataExportUrl = Url.Action("CategoriesList", "BasicData", new { langCode = Model?.PageBasicInfoObj?.langCode })
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @{
+                SearchFilterModel filter = new SearchFilterModel();
+
+
+                filter.SearchJSFunctionName = "SearchRecord();";
+                filter.SearchButtonType = "button";
+                filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                filter.SearchURL = Url.Action("CategoriesList", "BasicData" , new { langCode = Model?.PageBasicInfoObj?.langCode });
+
+
+
+                filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+            new HtmlFormFieldsEntity(){ FieldID = "CategoryId", FieldName="CategoryId",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Category Id", LabelText="Category Id", ToolTipText="Enter here the category id", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "Name", FieldName="Name",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Category Name", LabelText="Category Name", ToolTipText="Enter here category name", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ParentCategoryId", FieldName="ParentCategoryId",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Parent Category", LabelText="Parent Category", ToolTipText="Select parent category from the drop down", DropdownData=ParentCategoryIDs},
+            new HtmlFormFieldsEntity(){ FieldID = "FromDate", FieldName="FromDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="From Date", LabelText="From Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ToDate", FieldName="ToDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="To Date", LabelText="To Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/BasicData/PartialViews/_CategoriesList.cshtml", Model)
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+
+
+    <!-- Modals area Insert starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityInsert = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityInsert.ModalTitle = "Add Category";
+        htmlBootstrapModalEntityInsert.ModalDivId = "AddNewDataModal";
+        htmlBootstrapModalEntityInsert.SubmitBtnJsFunctionName = "SaveFormRecord();";
+        htmlBootstrapModalEntityInsert.SubmitButtonText = "Save";
+        htmlBootstrapModalEntityInsert.FormId = "data-insert-common-form";
+        htmlBootstrapModalEntityInsert.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+
+        htmlBootstrapModalEntityInsert.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+    new HtmlFormFieldsEntity(){ FieldID = "NameInsert", FieldName="NameInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Category Name", LabelText="Category Name", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "ParentCategoryIdInsert", FieldName="ParentCategoryIdInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Parent Category", LabelText="Parent Category", IsRequired=false,DropdownSelectType = (short)HtmlDropdownSelectType.Select2 , DropdownData=ParentCategoryIDs},
+    new HtmlFormFieldsEntity(){ FieldID = "IsActiveInsert", FieldName="IsActiveInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Status", LabelText="Is Active", IsRequired=true,DropdownSelectType = (short)HtmlDropdownSelectType.Simple , DropdownData=IsActiveDropDown},
+    new HtmlFormFieldsEntity(){ FieldID = "AttachmentInsert", FieldName="AttachmentInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.File, PlaceHolderText="Select Image File", LabelText="Image", IsRequired=false},
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityInsert)
+
+    <!-- /Modals area Insert ends here-->
+    <!-- Modals area Edit starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityEdit = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityEdit.ModalTitle = "Update Category";
+        htmlBootstrapModalEntityEdit.ModalDivId = "EditDataModal";
+        htmlBootstrapModalEntityEdit.SubmitBtnJsFunctionName = "UpdateFormRecord();";
+        htmlBootstrapModalEntityEdit.SubmitButtonText = "Update";
+        htmlBootstrapModalEntityEdit.FormId = "data-edit-common-form";
+        htmlBootstrapModalEntityEdit.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+        htmlBootstrapModalEntityEdit.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+    new HtmlFormFieldsEntity(){ FieldID = "NameUpdate", FieldName="NameUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Category Name", LabelText="Category Name", IsRequired=true },
+    new HtmlFormFieldsEntity(){ FieldID = "ParentCategoryIdUpdate", FieldName="ParentCategoryIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Parent Category", LabelText="Parent Category", IsRequired=false,DropdownSelectType = (short)HtmlDropdownSelectType.Select2 , DropdownData=ParentCategoryIDs},
+    new HtmlFormFieldsEntity(){ FieldID = "IsActiveUpdate", FieldName="IsActiveUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Status", LabelText="Is Active", IsRequired=true,DropdownSelectType = (short)HtmlDropdownSelectType.Simple , DropdownData=IsActiveDropDown},
+    new HtmlFormFieldsEntity(){ FieldID = "AttachmentUpdate", FieldName="AttachmentUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.File, PlaceHolderText="Select Image File", LabelText="Image", IsRequired=false},
+    new HtmlFormFieldsEntity(){ FieldID = "CategoryIdUpdate", FieldName="CategoryIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden},
+    new HtmlFormFieldsEntity(){ FieldID = "AttachmentIdUpdate", FieldName="AttachmentIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden},
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityEdit)
+
+    <!-- /Modals area Edit ends here-->
+
+
+</div>
+@section  Scripts{
+
+    <script>
+
+        function SaveFormRecord() {
+
+
+
+            $("#data-insert-common-form").submit(function(e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-insert-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+            let Name = $('#NameInsert').val();
+            let ParentCategoryId = $('#ParentCategoryIdInsert').val();
+            let IsActive = $('#IsActiveInsert').val();
+
+            if (!checkIfStringIsEmtpy(Name)) {
+                showSuccessErrorMsg("error", "Error", "Please fill category name!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(IsActive)) {
+                showSuccessErrorMsg("error", "Error", "Please fill status field!");
+                return false;
+            }
+
+
+
+            var AttachmentFile = $("#AttachmentInsert").get(0).files;
+
+            var formDate = new FormData();
+
+            for (var i = 0; i < AttachmentFile.length; i++) {
+                formDate.append("AttachmentFile", AttachmentFile[i]);
+            }
+            formDate.append("Name", Name);
+            formDate.append("ParentCategoryId", ParentCategoryId);
+            formDate.append("IsActive", IsActive);
+            formDate.append("DataOperationType", '@((short)DataOperationType.Insert)');
+
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            let saveUrl = "@Url.Action("SaveUpdateCategory", "BasicData" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: formDate,
+                success: function(data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+
+        }
+
+        function UpdateFormRecord() {
+
+            $("#data-edit-common-form").submit(function(e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-edit-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+            let CategoryId = $('#CategoryIdUpdate').val();
+            let Name = $('#NameUpdate').val();
+            let ParentCategoryId = $('#ParentCategoryIdUpdate').val();
+            let AttachmentId = $('#AttachmentIdUpdate').val();
+            let IsActive = $('#IsActiveUpdate').val();
+
+            if (!checkIfStringIsEmtpy(Name)) {
+                showSuccessErrorMsg("error", "Error", "Please fill category name!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(IsActive)) {
+                showSuccessErrorMsg("error", "Error", "Please fill status field!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(CategoryId)) {
+                showSuccessErrorMsg("error", "Error", "CategoryId is null!");
+                return false;
+            }
+
+
+            let AttachmentFile = $("#AttachmentUpdate").get(0).files;
+
+
+
+            var formDate = new FormData();
+
+            for (var i = 0; i < AttachmentFile.length; i++) {
+                formDate.append("AttachmentFile", AttachmentFile[i]);
+            }
+            formDate.append("CategoryId", CategoryId);
+            formDate.append("Name", Name);
+            formDate.append("ParentCategoryId", ParentCategoryId);
+            formDate.append("AttachmentId", AttachmentId);
+            formDate.append("IsActive", IsActive);
+            formDate.append("DataOperationType", '@((short)DataOperationType.Update)');
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            let saveUrl = "@Url.Action("SaveUpdateCategory", "BasicData" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: formDate,
+
+                success: function(data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Updated Successfully!");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function() {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+
+        }
+
+        function showEditModal(CategoryId, Name, ParentCategoryId, IsActive, AttachmentId) {
+
+            console.log(ParentCategoryId);
+
+            //--First clear old values
+            $('#CategoryIdUpdate').val("");
+            $('#NameUpdate').val("");
+            $("#ParentCategoryIdUpdate").val("").trigger("change");
+
+            //--now set new values
+            $('#CategoryIdUpdate').val(CategoryId);
+            $('#NameUpdate').val(Name);
+            $('#AttachmentIdUpdate').val(AttachmentId);
+
+            //$("#ParentCategoryIdUpdate").select2("val", ParentCategoryId);
+            $("#ParentCategoryIdUpdate").val(ParentCategoryId).trigger("change");
+
+            if (IsActive != undefined && IsActive == 'True') {
+                $('#IsActiveUpdate').val('true');
+            } else {
+                $('#IsActiveUpdate').val('false');
+            }
+
+            $('#EditDataModal').modal('show');
+
+        }
+
+    </script>
+
+
+
+}

@@ -1,0 +1,117 @@
+﻿@model Entities.MainModels.ConfigurationModel
+
+@{
+    bool hasUpdateRecordRight = true;
+
+    if (Model!=null && Model.PageBasicInfoObj != null && Model.PageBasicInfoObj.EntityId > 0)
+    {
+        List<RoleRightEntity>? UserRolesRights = sessionManager != null ? await sessionManager.GetUserRoleRightsFromSession() : new List<RoleRightEntity>();
+        hasUpdateRecordRight = UserRolesRights != null && UserRolesRights.Count > 0 && UserRolesRights.Any(x => x.EntityId == Model?.PageBasicInfoObj?.EntityId && x.RightId == (short)UserRightsEnum.Update) ? true : false;
+    }
+
+}
+
+
+@await Html.PartialAsync("~/Views/Common/_DataTableLength.cshtml")
+
+<table class="table site-table-listing">
+    <thead>
+        <tr>
+            <th id="lbl_hdr_menuId"> Menu Navigation ID</th>
+            <th id="lbl_hdr_menuName"> Menu Name</th>
+            <th id="lbl_hdr_menuParentName"> Parent Menu Name</th>
+            
+            <th id="lbl_hdr_createdon"> Created On</th>
+
+
+            <th class="text-center" style="width: 20px;"><i class="icon-arrow-down12"></i></th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @{
+            if (Model != null && Model.menuNavigationList != null && Model.menuNavigationList.Count > 0)
+            {
+                foreach (var item in Model.menuNavigationList)
+                {
+                    <tr>
+                        <td><span class="text-dark">@item.MenuNavigationId</span></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div>
+                                    <a href="#" class="text-default font-weight-semibold">@item.MenuNavigationName</a>
+
+                                </div>
+                            </div>
+                        </td>
+                         <td><span class="text-dark">@(item.ParentMenuNavigationName)</span></td>
+                    
+
+
+                        <td><span class="text-dark">@(item.CreatedOn.ToString("dd MMM, yyyy"))</span></td>
+
+
+                        <td class="text-center">
+                            <div class="list-icons">
+                                <div class="dropdown">
+                                    <a href="#" class="list-icons-item" data-toggle="dropdown">
+                                        <i class="icon-menu9"></i>
+                                    </a>
+
+                                    <div class="dropdown-menu dropdown-menu-right">
+
+                                        @if (hasUpdateRecordRight)
+                                        {
+                                            <a href="@Url.Action("MenuLocalizationDetail", "Configuration" ,new { MenuNavigationId = item.MenuNavigationId  , langCode = Model?.PageBasicInfoObj?.langCode })" class="dropdown-item text-indigo-600"><i class="icon-database-edit2"></i>Languages Detail</a>
+
+                                        }
+                                       
+                                       
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="text-center" colspan="20"><b>  No record found </b></td>
+
+                </tr>
+            }
+        }
+
+
+
+
+    </tbody>
+</table>
+
+
+
+<div class="row" id="pagination_div">
+
+    @{
+        if (Model != null && Model.pageHelperObj != null)
+        {
+            PagerHelper ph = new PagerHelper();
+            ph.CurrentPage = Model.pageHelperObj.CurrentPage;
+            ph.TotalRecords = Model.pageHelperObj.TotalRecords;
+            ph.RecordsPerPage = Model.pageHelperObj.RecordsPerPage;
+            ph.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+            ph.PageUrl = Url.Action("MenuLocalization", "Configuration", new { langCode = Model?.PageBasicInfoObj?.langCode });
+
+            ph.AjaxEnabled = true;
+            ph.OnClientClickAjaxCall = "PaginationAfterAjax(this)";
+
+            @await Html.PartialAsync("~/Views/Common/_Pager.cshtml", ph)
+        }
+
+    }
+
+
+</div>
+
+

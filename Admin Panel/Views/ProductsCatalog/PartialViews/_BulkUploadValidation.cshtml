@@ -1,0 +1,42 @@
+﻿@model Entities.MainModels.ProductsCatalogModel
+
+<div class="card">
+
+    <div class="card-body">
+
+
+        <div class="row">
+            @{
+                if (Model != null && Model.SuccessErrorMsgEntityObj != null && Model.SuccessErrorMsgEntityObj.validationList != null && Model.SuccessErrorMsgEntityObj.validationList.Count > 0)
+                {
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <div class="alert alert-danger alert-styled-left alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert"><span>×</span></button>
+
+                            @foreach (var item in Model.SuccessErrorMsgEntityObj.validationList)
+                            {
+                                <span class="font-weight-semibold">@item</span>
+
+                                <br />
+                            }
+
+
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <div class="alert alert-success alert-styled-left alert-arrow-left alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert"><span>×</span></button>
+                            <span class="font-weight-semibold"> All data saved successfully! </span>
+                        </div>
+
+                    
+                    </div>
+                }
+            }
+        </div>
+
+    </div>
+</div>

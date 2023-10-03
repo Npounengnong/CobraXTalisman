@@ -1,0 +1,4 @@
+﻿@model Entities.CommonModels.PageBasicInfo
+
+<h5 class="card-title"><i class="icon-list mr-2"></i><span id="@(String.IsNullOrEmpty(Model?.TitleTagHtmlId) ? "lbl_page_grid_title" : Model?.TitleTagHtmlId)">@(Model?.PageTitle ?? "Page Info")</span> </h5>
+

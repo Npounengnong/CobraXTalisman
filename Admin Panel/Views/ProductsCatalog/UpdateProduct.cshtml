@@ -1,0 +1,1597 @@
+﻿@model Entities.MainModels.ProductsCatalogModel
+
+@using Newtonsoft.Json
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+
+    #endregion
+}
+
+
+<!--Page specific java script-->
+<script src="~/content/themeContent/global_assets/js/demo_pages/form_checkboxes_radios.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/plugins/purify.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/plugins/sortable.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/fileinput.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/demo_pages/uploader_bootstrap.js"></script>
+<!--/Page specific java script-->
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+
+    List<SelectListItem> EstimatedShippingDaysList = new List<SelectListItem>();
+    EstimatedShippingDaysList.Add(new SelectListItem { Value = "1", Text = "1" });
+    EstimatedShippingDaysList.Add(new SelectListItem { Value = "2", Text = "2" });
+    EstimatedShippingDaysList.Add(new SelectListItem { Value = "3", Text = "3" });
+    EstimatedShippingDaysList.Add(new SelectListItem { Value = "4", Text = "4" });
+
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = false,
+                ShowActionsButton = false,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = false,
+                ShowGoBackButton = true
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+
+    <form class="form-validate-jquery" id="data-insert-form" action="#">
+
+
+        <div class="card border-left-3 border-left-slate">
+            <div class="card-header header-elements-inline">
+                <h6 class="card-title" id="lbl_prd_update_page_sub_title">@(Model?.PageBasicInfoObj?.PageTitle ?? "Update Product")</h6>
+                <div class="header-elements">
+                    <div class="list-icons">
+                        <a class="list-icons-item" data-action="collapse"></a>
+                        @*  <a class="list-icons-item" data-action="reload"></a>
+                        <a class="list-icons-item" data-action="remove"></a>*@
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <ul class="nav nav-tabs nav-tabs-highlight mb-0">
+
+                    <li class="nav-item"><a href="#bordered-tab1" class="nav-link active" data-toggle="tab"><i class="icon-info3 mr-2"></i><span id="lbl_prd_info_tab">Product Basic Info</span> </a></li>
+                    <li class="nav-item"><a href="#bordered-tab2" class="nav-link" data-toggle="tab"><i class="icon-price-tag3 mr-2"></i><span id="lbl_prd_price_tab">Prices</span> </a></li>
+                    <li class="nav-item"><a href="#bordered-tab3" class="nav-link" data-toggle="tab"><i class="fas fa-shipping-fast mr-2"></i><span id="lbl_prd_shipping_tab">Shipping</span> </a></li>
+                    <li class="nav-item"><a href="#bordered-tab4" class="nav-link" data-toggle="tab"><i class="fas fa-box mr-2"></i> <span id="lbl_prd_inventory_tab">Inventory</span></a></li>
+                    <li class="nav-item"><a href="#bordered-tab5" class="nav-link" data-toggle="tab"><i class="icon-file-picture mr-2"></i><span id="lbl_prd_pictures_tab">Pictures</span> </a></li>
+                    <li class="nav-item"><a href="#bordered-tab6" class="nav-link" data-toggle="tab"><i class="icon-browser mr-2"></i><span id="lbl_prd_seo_tab">SEO</span> </a></li>
+                    <li class="nav-item"><a href="#bordered-tab7" class="nav-link" data-toggle="tab"><i class="icon-display4 mr-2"></i> <span id="lbl_prd_attributes_tab">Product Attributes</span></a></li>
+
+                </ul>
+
+                <div class="tab-content card card-body border-top-0 rounded-top-0 mb-0">
+                    <div class="tab-pane fade show active" id="bordered-tab1">
+                        <fieldset class="mb-3">
+
+                            <!--Hidden fields area-->
+                            <input type="hidden" id="ProductId" name="ProductId" value="@(Model!=null && Model.ProductObj!=null ? Model.ProductObj.ProductId : 0)" />
+                            <!--/Hidden fields area-->
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_product_name">Product Name</span>
+                                    <span class="text-danger">*</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Enter here the name of the product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" maxlength="700" name="ProductName" id="ProductName" value="@(Model!=null && Model.ProductObj!=null ? Model.ProductObj.ProductName : "")" class="form-control" required placeholder="">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_short_description">Short Description</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Enter here short description for product if necessary"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <textarea class="form-control" maxlength="1500" name="ShortDescription" id="ShortDescription" rows="5" cols="5">
+                                        @(Model.ProductObj.ShortDescription)
+                                    </textarea>
+
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_full_description">Full Description</span>
+                                    <span class="text-danger">*</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Enter here full description for the product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <textarea class="form-control" id="FullDescription" name="FullDescription" required rows="4" cols="5">
+                                        @(Model.ProductObj.FullDescription)
+                                    </textarea>
+
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_manufacturer">Manufacturer</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select manufacturer from the dropdown"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="ManufacturerId" name="ManufacturerId" data-placeholder="Select a State..." class="form-control">
+                                        <option value="">Select a State...</option>
+
+                                        @{
+                                            int ManufacturerId = Model != null && Model.ProductObj != null && Model.ProductObj.ManufacturerId != null ? Convert.ToInt32(Model.ProductObj.ManufacturerId) : 0;
+
+                                            if (Model != null && Model.ManufacturerList != null && Model.ManufacturerList.Count > 0)
+                                            {
+                                                foreach (var item in Model.ManufacturerList)
+                                                {
+                                                    if (ManufacturerId == item.ManufacturerId)
+                                                    {
+                                                        <option value="@item.ManufacturerId" selected>@item.Name</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.ManufacturerId">@item.Name</option>
+                                                    }
+
+                                                }
+                                            }
+                                        }
+
+
+
+                                    </select>
+                                </div>
+
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_vendor">Vendor</span>
+                                    <span class="text-danger">*</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select vendor name from the drop down"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="VendorId" name="VendorId" data-placeholder="Select a Vendor..." class="form-control" required>
+                                        <option value="">Select a Vendor...</option>
+
+                                        @{
+                                            int VendorId = Model != null && Model.ProductObj != null && Model.ProductObj.VendorId != null ? Convert.ToInt32(Model.ProductObj.VendorId) : 0;
+
+                                            if (Model != null && Model.UsersList != null && Model.UsersList.Count > 0)
+                                            {
+                                                foreach (var item in Model.UsersList)
+                                                {
+                                                    string FullName = item.FirstName + " " + item.LastName;
+
+                                                    if (VendorId == item.UserId)
+                                                    {
+                                                        <option value="@item.UserId" selected>@FullName</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.UserId">@FullName</option>
+                                                    }
+
+
+                                                }
+                                            }
+                                        }
+
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_categories">Categories</span>
+                                    <span class="text-danger">*</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select categories for the product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="SelectedCategoryIds" name="SelectedCategoryIds" multiple="multiple" class="form-control select" data-fouc required>
+
+                                        @{
+                                            var ProductCategories = Model != null && Model.ProductObj != null && !String.IsNullOrWhiteSpace(Model.ProductObj.SelectedCategoriesJson) ? JsonConvert.DeserializeObject<List<CategoryEntity>>(Model.ProductObj.SelectedCategoriesJson).ToList() : new List<CategoryEntity>();
+
+                                            if (Model != null && Model.CategoryList != null && Model.CategoryList.Count > 0)
+                                            {
+                                                foreach (var item in Model.CategoryList)
+                                                {
+                                                    string? ParentCategory = Model.CategoryList.Where(c => c.CategoryId == item.ParentCategoryId).Select(c => c.Name).FirstOrDefault();
+                                                    string? Category = String.IsNullOrWhiteSpace(ParentCategory) ? item.Name : ParentCategory + " >> " + item.Name;
+
+
+                                                    if (ProductCategories.Any(i => i.CategoryId == item.CategoryId))
+                                                    {
+                                                        <option value="@item.CategoryId" selected>@Category</option>
+                                                    }
+                                                    else
+                                                    {
+
+                                                        <option value="@item.CategoryId">@Category</option>
+                                                    }
+
+
+
+                                                }
+                                            }
+                                        }
+
+
+                                    </select>
+                                </div>
+
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_tags">Tags</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Type and search tags from the drop down if you want to associate tags with this product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="SelectedTagIds" name="SelectedTagIds" class="form-control select-multiple-limited" multiple="multiple" data-fouc>
+
+
+                                        @{
+                                            var ProductTags = Model != null && Model.ProductObj != null && !String.IsNullOrWhiteSpace(Model.ProductObj.SelectedTagsJson) ? JsonConvert.DeserializeObject<List<TagEntity>>(Model.ProductObj.SelectedTagsJson).ToList() : new List<TagEntity>();
+
+                                            if (ProductTags != null && ProductTags.Count > 0)
+                                            {
+                                                foreach (var item in ProductTags)
+                                                {
+
+                                                    <option value="@item.TagId" selected>@item.TagName</option>
+
+                                                }
+                                            }
+                                        }
+
+
+                                    </select>
+                                </div>
+
+                            </div>
+
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_isactive">IsActive</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="If this option is uncheck then product will not be visible on website. It is only for showing/hiding product on website at later stages"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="IsActive" name="IsActive" class="form-check-input-styled-info" @(Model!=null && Model.ProductObj!=null && Model.ProductObj.IsActive!=null && Model.ProductObj.IsActive==true ? "checked" : "") data-fouc>
+
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_showOnHomePage"> Show on home page</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="In every website, there is home page. If you want to show this product on the home page of your website, then make this option enable."><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="ShowOnHomePage" name="ShowOnHomePage" class="form-check-input-styled-info" @(Model!=null && Model.ProductObj!=null && Model.ProductObj.ShowOnHomePage!=null && Model.ProductObj.ShowOnHomePage==true ? "checked" : "") data-fouc>
+
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_markAsNew">  Mark as new</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Check to mark the product as new. Use this option for promoting new products."><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="MarkAsNew" name="MarkAsNew" class="form-check-input-styled-info" @(Model!=null && Model.ProductObj!=null && Model.ProductObj.MarkAsNew!=null && Model.ProductObj.MarkAsNew==true ? "checked" : "") data-fouc>
+
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_allowCustomerReview">Allow customer reviews</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Check this option if you want to customers to review this product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="AllowCustomerReviews" name="AllowCustomerReviews" class="form-check-input-styled-info" @(Model!=null && Model.ProductObj!=null && Model.ProductObj.AllowCustomerReviews!=null && Model.ProductObj.AllowCustomerReviews==true ? "checked" : "") data-fouc>
+
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_availableStartDte">Available Start Date</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Product will be available from this date"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <span class="input-group-prepend">
+                                                <span class="input-group-text"><i class="icon-calendar22 mr-2"></i></span>
+                                            </span>
+                                            @{
+                                                string StartDate = Model != null && Model.ProductObj != null && Model.ProductObj.SellStartDatetimeUtc != null ?
+                                                Convert.ToDateTime(Model.ProductObj.SellStartDatetimeUtc).ToString("dd MMM, yyyy") : "";
+                                            }
+                                            <input type="text" id="SellStartDatetimeUtc" name="SellStartDatetimeUtc" class="form-control date-filter-exclude pickadate" value="@StartDate" placeholder="Start date &hellip;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_availableEndDte"> Available End Date</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Product will not be available after this date"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <span class="input-group-prepend">
+                                                <span class="input-group-text"><i class="icon-calendar22 mr-2"></i></span>
+                                            </span>
+
+                                            @{
+                                                string EndDate = Model != null && Model.ProductObj != null && Model.ProductObj.SellEndDatetimeUtc != null ?
+                                                Convert.ToDateTime(Model.ProductObj.SellEndDatetimeUtc).ToString("dd MMM, yyyy") : "";
+                                            }
+                                            <input type="text" id="SellEndDatetimeUtc" name="SellEndDatetimeUtc" class="form-control date-filter-exclude pickadate" value="@EndDate" placeholder="End date &hellip;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_sku"> Sku</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="A unique product stock keeping unit(Sku) value"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" maxlength="1000" id="Sku" name="Sku" value="@Model.ProductObj.Sku" class="form-control" placeholder="">
+                                </div>
+                            </div>
+
+                        </fieldset>
+                    </div>
+
+                    <div class="tab-pane fade" id="bordered-tab2">
+                        <fieldset class="mb-3">
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_price"> Price</span>
+                                    <span class="text-danger">*</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Enter current price for the product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-dollar-sign mr-2"></i></span>
+                                        </div>
+                                        <input type="number" min="0" max="100000000" id="Price" name="Price" class="form-control" value="@Model.ProductObj.Price" required placeholder="Enter product price">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_oldPrice"> Old Price</span>
+                                    @*   <span class="text-danger">*</span>*@
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="It is the old price of the product. If you want to compare current price the old price then use this field"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-dollar-sign mr-2"></i></span>
+                                        </div>
+                                        <input type="number" min="0" max="100000000" id="OldPrice" name="OldPrice" class="form-control" value="@Model.ProductObj.OldPrice" placeholder="Enter product old price if any">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_discountAllowed"> Is Discount Allowed?</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="If this option is uncheck then no discount will be allowed on this product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="IsDiscountAllowed" name="IsDiscountAllowed" onchange="EnableDiscountsDropDown();" @(Model!=null && Model.ProductObj!=null && Model.ProductObj.IsDiscountAllowed!=null && Model.ProductObj.IsDiscountAllowed==true ? "checked" : "") class="form-check-input-styled-info" data-fouc>
+
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            @{
+                                string DiscountAllowedCss = Model != null && Model.ProductObj != null && Model.ProductObj.IsDiscountAllowed != null && Model.ProductObj.IsDiscountAllowed == true ? "style='display: none;'" : "";
+                            }
+
+                            <div class="form-group row" id="SelectedDiscountIdsDiv" @DiscountAllowedCss>
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_discounts"> Discounts</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Drop down of discounts types that assigned to product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="SelectedDiscountIds" name="SelectedDiscountIds" class="form-control select" data-fouc>
+                                        <option value="">Select discount</option>
+
+                                        @{
+                                            var ProductDiscounts = Model != null && Model.ProductObj != null && !String.IsNullOrWhiteSpace(Model.ProductObj.SelectedDiscountsJson) ? JsonConvert.DeserializeObject<List<DiscountEntity>>(Model.ProductObj.SelectedDiscountsJson).ToList() : new List<DiscountEntity>();
+                                            if (Model != null && Model.DiscountsList != null && Model.DiscountsList.Count > 0)
+                                            {
+
+                                                foreach (var item in Model.DiscountsList)
+                                                {
+
+                                                    if (ProductDiscounts.Any(i => i.DiscountId == item.DiscountId))
+                                                    {
+                                                        <option value="@item.DiscountId" selected>@item.Title</option>
+                                                    }
+                                                    else
+                                                    {
+
+                                                        <option value="@item.DiscountId">@item.Title</option>
+                                                    }
+                                                }
+                                            }
+                                        }
+
+
+
+                                    </select>
+                                </div>
+                            </div>
+
+
+                        </fieldset>
+                    </div>
+
+                    <div class="tab-pane fade" id="bordered-tab3">
+                        <fieldset class="mb-3">
+
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_freeShipping">  Free Shipping</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Check this option if this product coming with free shipping"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="IsShippingFree" name="IsShippingFree" onchange="EnableShippingChargesBox();" @(Model!=null && Model.ProductObj!=null && Model.ProductObj.IsShippingFree!=null && Model.ProductObj.IsShippingFree==true ? "checked" : "") class="form-check-input-styled-info" data-fouc>
+
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @{
+                                string FreeShippingDivCss = Model != null && Model.ProductObj != null && Model.ProductObj.IsShippingFree != null && Model.ProductObj.IsShippingFree == false ? "style='display: none;'" : "";
+                            }
+
+                            <div class="form-group row" id="ShippingChargesDiv" @FreeShippingDivCss>
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_shippingCharges"> Shipping Charges</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Shipping charges associated with this product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="number" min="0" id="ShippingCharges" name="ShippingCharges" value="@(Model!=null && Model.ProductObj!=null && Model.ProductObj.ShippingCharges!=null ?  Model.ProductObj.ShippingCharges : "")" class="form-control" data-fouc>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_shippingMethods">  Shipping Methods</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Different shipping methods"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="SelectedShippingMethodIds" name="SelectedShippingMethodIds" multiple="multiple" class="form-control select" required data-fouc>
+
+                                        @{
+                                            var ProductShippingMethods = Model != null && Model.ProductObj != null && !String.IsNullOrWhiteSpace(Model.ProductObj.SelectedShippingMethodsJson) ?
+                                            JsonConvert.DeserializeObject<List<ShippingMethodEntity>>(Model.ProductObj.SelectedShippingMethodsJson).ToList() : new List<ShippingMethodEntity>();
+
+                                            if (Model != null && Model.ShippingMethodsList != null && Model.ShippingMethodsList.Count > 0)
+                                            {
+                                                foreach (var item in Model.ShippingMethodsList)
+                                                {
+
+
+                                                    if (ProductShippingMethods.Any(i => i.ShippingMethodId == item.ShippingMethodId))
+                                                    {
+                                                        <option value="@item.ShippingMethodId" selected>@item.MethodName</option>
+                                                    }
+                                                    else
+                                                    {
+
+                                                        <option value="@item.ShippingMethodId">@item.MethodName</option>
+                                                    }
+                                                }
+                                            }
+                                        }
+
+
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_estimatedShippingDays">  Estimated Shipping Day</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select estimated shipping days from the drop down that the process may take during delivery of this product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="EstimatedShippingDays" name="EstimatedShippingDays" class="form-control" required>
+
+
+                                        @{
+                                            string EstimatedShippingDays = Model != null && Model.ProductObj != null && Model.ProductObj.EstimatedShippingDays != null ? Model.ProductObj.EstimatedShippingDays.ToString() : "0";
+
+                                            if (EstimatedShippingDaysList != null)
+                                            {
+                                                foreach (var item in EstimatedShippingDaysList)
+                                                {
+                                                    if (EstimatedShippingDays == item.Value)
+                                                    {
+                                                        <option value="@item.Value" selected>@item.Text</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.Value">@item.Text</option>
+                                                    }
+
+                                                }
+                                            }
+                                        }
+
+
+
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_returnAble">  Return Able</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="If this option is uncheck, then customer will not be able to put request for returing this product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="IsReturnAble" name="IsReturnAble" @(Model!=null && Model.ProductObj!=null && Model.ProductObj.IsReturnAble!=null && Model.ProductObj.IsReturnAble==true ? "checked" : "") class="form-check-input-styled-info" data-fouc>
+
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </fieldset>
+                    </div>
+                    <div class="tab-pane fade" id="bordered-tab4">
+                        <fieldset class="mb-3">
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_inventoryMethod">  Inventory Method</span>
+
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Inventory method"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="InventoryMethodID" name="InventoryMethodID" class="form-control">
+                                        <option value="">Select Inventory Method...</option>
+                                        @{
+                                            int InventoryMethodId = Model != null && Model.ProductObj != null && Model.ProductObj.InventoryMethodId != null ? Convert.ToInt32(Model.ProductObj.InventoryMethodId) : -1;
+
+                                            if (Model != null && Model.InventoryMethodsList != null && Model.InventoryMethodsList.Count > 0)
+                                            {
+                                                foreach (var item in Model.InventoryMethodsList)
+                                                {
+                                                    if (InventoryMethodId == item.InventoryMethodId)
+                                                    {
+                                                        <option value="@item.InventoryMethodId" selected>@item.InventoryMethodName</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.InventoryMethodId">@item.InventoryMethodName</option>
+                                                    }
+
+                                                }
+                                            }
+                                        }
+
+
+
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_wareHouse"> Warehouse</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Warehouse"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="WarehouseId" name="WarehouseId" class="form-control">
+                                        <option value="">Select Warehouse...</option>
+                                        @{
+                                            int WarehouseId = Model != null && Model.ProductObj != null && Model.ProductObj.WarehouseId != null ? Convert.ToInt32(Model.ProductObj.WarehouseId) : -1;
+
+                                            if (Model != null && Model.WarehousesList != null && Model.WarehousesList.Count > 0)
+                                            {
+                                                foreach (var item in Model.WarehousesList)
+                                                {
+                                                    if (WarehouseId == item.WarehouseId)
+                                                    {
+                                                        <option value="@item.WarehouseId" selected>@item.WarehouseName</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@item.WarehouseId">@item.WarehouseName</option>
+                                                    }
+
+                                                }
+                                            }
+                                        }
+
+
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_stockQuantity"> Stock Quantity</span>
+                                    <span class="text-danger">*</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="You can set here the stock quantity. The default value is 100"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="number" min="0" id="StockQuantity" name="StockQuantity" value="@Model.ProductObj.StockQuantity" class="form-control" required />
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_bountToStockQuanity"> Bound To Stock Quantity</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="If this option is checked, then product will be be bound to the stock quantity."><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="IsBoundToStockQuantity" name="IsBoundToStockQuantity" @(Model!=null && Model.ProductObj!=null && Model.ProductObj.IsBoundToStockQuantity!=null && Model.ProductObj.IsBoundToStockQuantity==true ? "checked" : "") class="form-check-input-styled-info" data-fouc>
+
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_displayStockQuanity">  Display Stock Quantity</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Check to display stock quantity. When enabled, customers will see stock quantity."><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="DisplayStockQuantity" name="DisplayStockQuantity" class="form-check-input-styled-info" @(Model!=null && Model.ProductObj!=null && Model.ProductObj.DisplayStockQuantity!=null && Model.ProductObj.DisplayStockQuantity==true ? "checked" : "") data-fouc>
+
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_orderMinQuantity">Order Minimum Cart Quantity</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Set the minimum quantity allowed in a customer's shopping cart e.g. set to 4 to only allow customers to purchase 4 or more of this product."><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="number" min="1" id="OrderMinimumQuantity" name="OrderMinimumQuantity" value="@Model.ProductObj.OrderMinimumQuantity" class="form-control" />
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_orderMaxQuantity"> Order Maximum Cart Quantity</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Set the maximum quantity allowed in a customer's shopping cart e.g. set to 4 to only allow customers to purchase 4 of this product."><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="number" min="1" id="OrderMaximumQuantity" name="OrderMaximumQuantity" value="@Model.ProductObj.OrderMaximumQuantity" class="form-control" />
+                                </div>
+                            </div>
+
+
+                        </fieldset>
+                    </div>
+                    <div class="tab-pane fade" id="bordered-tab5">
+                        <fieldset class="mb-3">
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_productImage">  Product Images</span>
+                                    <span class="text-danger">*</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select any category from the dropdown"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="file" id="ProductImages" name="ProductImages" class="file-input" multiple="multiple" data-show-upload="false" data-show-caption="true" data-show-preview="true" data-fouc>
+
+                                </div>
+                            </div>
+
+                            <div class=" row">
+                                <div class="col-lg-12">
+                                    <div class="table-responsive">
+                                        <table class="table site-table-listing" id="product_images_table">
+                                            <thead>
+                                                <tr>
+                                                    <th id="lbl_hdr_imageName"> Image Name</th>
+
+                                                    <th class="text-center" style="width: 20px;"><i class="icon-arrow-down12"></i></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    var ProductPictures = Model != null && Model.ProductObj != null && !String.IsNullOrWhiteSpace(Model.ProductObj.ProductImagesJson) ?
+                                                    JsonConvert.DeserializeObject<List<ProductPicturesMappingEntity>>(Model.ProductObj.ProductImagesJson).ToList() : new List<ProductPicturesMappingEntity>();
+
+                                                    if (ProductPictures != null && ProductPictures.Count > 0)
+                                                    {
+                                                        foreach (var item in ProductPictures)
+                                                        {
+
+                                                            <tr>
+
+                                                                <td>
+
+                                                                    @{
+                                                                        string ImagePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot" + item.AttachmentURL);
+
+                                                                        if (System.IO.File.Exists(ImagePath))
+                                                                        {
+
+                                                                            <a href="@item.AttachmentURL" target="_blank">
+                                                                                <img src="@item.AttachmentURL" class="" width="100" height="100" alt="">
+                                                                            </a>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <a href="/content/themeContent/global_assets/images/placeholders/placeholder.jpg" target="_blank">
+                                                                                <img src="/content/themeContent/global_assets/images/placeholders/placeholder.jpg" class="" width="100" height="100" alt="">
+                                                                            </a>
+                                                                        }
+                                                                    }
+
+
+
+
+                                                                </td>
+
+
+                                                                <td>
+                                                                    <div class="">
+                                                                        <a href="#!" class="dropdown-item text-pink-600" onclick="DeleteProductImage(this ,'@item.PictureId', '@item.AttachmentURL');">
+                                                                            <i class="icon-trash"></i> Delete
+                                                                        </a>
+                                                                    </div>
+                                                                </td>
+
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr id="product_attribute_no_data_row">
+                                                            <td class="text-center" colspan="20"><b>  No record found </b></td>
+
+                                                        </tr>
+                                                    }
+                                                }
+
+
+
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+
+                        </fieldset>
+                    </div>
+
+                    <div class="tab-pane fade" id="bordered-tab6">
+
+                        <fieldset class="mb-3">
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_metaTitle">   Meta Title</span>
+
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="SEO meta title for this product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" id="MetaTitle" name="MetaTitle" value="@Model.ProductObj.MetaTitle" class="form-control" />
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_metaKeyWords">   Meta keywords</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Add here comma seperated keywords for SEO purpose of this product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" id="MetaKeywords" name="MetaKeywords" value="@Model.ProductObj.MetaKeywords" class="form-control" />
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_metaDesc">   Meta Description</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Meta description for SEO"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+
+                                    <textarea class="form-control" id="MetaDescription" name="MetaDescription" rows="5" cols="5">
+                                        @Model.ProductObj.MetaDescription
+                                    </textarea>
+                                </div>
+                            </div>
+
+                        </fieldset>
+                    </div>
+                    <div class="tab-pane fade" id="bordered-tab7">
+                        <fieldset class="mb-3">
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_attribute">  Attribute</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Choose an attribute from the dropdown"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="ProductAttributeId" class="form-control" onchange="GetProductAttributeValuesByAttributeID()">
+                                        <option value="">Select an Attribute...</option>
+                                        @{
+                                            if (Model != null && Model.ProductAttributesList != null && Model.ProductAttributesList.Count > 0)
+                                            {
+                                                foreach (var item in Model.ProductAttributesList)
+                                                {
+                                                    <option value="@item.ProductAttributeId">@item.DisplayName</option>
+                                                }
+                                            }
+                                        }
+
+
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_priceAdjustmentType">   Price Adjustment Type</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Determines whether to apply a percentage to the product. If not enabled, a fixed value is will be applied to the product cost."><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="PriceAdjustmentType" name="PriceAdjustmentType" class="form-control">
+
+
+                                        <option value="@((short)PriceAdjustmentTypeEnum.FixedValue)">Fixed Value</option>
+                                        <option value="@((short)PriceAdjustmentTypeEnum.Percentage)">Percentage</option>
+
+
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_priceAdjustment">   Price adjustment</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="The price adjustment applied when choosing this attribute value. For example '10' to add 10 dollars. Or 10% if 'Use percentage' is ticked. Its default value is zero"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="number" id="PriceAdjustment" name="PriceAdjustment" min="0" value="0" class="form-control" />
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_prd_update_attributeValue">   Attribute Value</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Value of the attribute."><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="AttributeValue" class="form-control">
+
+                                        <option value="">Select an Attribute value...</option>
+
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <div class="col-lg-12">
+
+                                    <div class="d-flex justify-content-end align-items-center">
+                                        <button type="button" onclick="AddProductAttributeRow();" class="btn bg-purple-300 ml-3" id="lbl_add_attribute_btn">Add Attribute</button>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class=" row">
+                                <div class="col-lg-12">
+                                    <div class="table-responsive" id="product_attribute_data_table">
+                                        <table class="table site-table-listing" id="product_attributes_table">
+                                            <thead>
+                                                <tr>
+
+                                                    <th id="lbl_hdr_attribName"> Attribute</th>
+                                                    <th id="lbl_hdr_attribValue"> Attribute Value</th>
+                                                    <th id="lbl_hdr_attribPriceAdjType">Price Adjustment Type</th>
+                                                    <th id="lbl_hdr_attribPriceAdj">Price Adjustment</th>
+
+
+
+                                                    <th class="text-center" style="width: 20px;"><i class="icon-arrow-down12"></i></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    var ProductAttributes = Model != null && Model.ProductObj != null && !String.IsNullOrWhiteSpace(Model.ProductObj.ProductAttributesJson) ?
+                                                    JsonConvert.DeserializeObject<List<ProductAttributeEntity>>(Model.ProductObj.ProductAttributesJson).ToList() : new List<ProductAttributeEntity>();
+
+                                                    if (ProductAttributes != null && ProductAttributes.Count > 0)
+                                                    {
+                                                        foreach (var item in ProductAttributes)
+                                                        {
+                                                            <tr>
+                                                                <td>
+                                                                    <input type="hidden" data_ProductAttributeMappingId="@item.ProductAttributeMappingID" class="product-attribute-row" data_ProductAttributeId="@item.ProductAttributeId" data_AttributeValue="@item.AttributeValue" data_PriceAdjustmentType="@item.PriceAdjustmentType" data_PriceAdjustment="@item.PriceAdjustment">
+                                                                    @item.DisplayName
+                                                                </td>
+                                                                <td> @item.AttributeDisplayText</td>
+
+                                                                <td> @(String.IsNullOrWhiteSpace(item.PriceAdjustmentType) || item.PriceAdjustmentType == "1" ? "Fixed Value" : "Percentage")</td>
+                                                                <td>@item.PriceAdjustment</td>
+
+                                                                <td>
+                                                                    <div class=""><a href="#!" class="dropdown-item text-pink-600" onclick="DeleteProductAttributeRow( this,'@item.ProductAttributeMappingID');"><i class="icon-trash"></i> Delete</a></div>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr id="product_attribute_no_data_row">
+                                                            <td class="text-center" colspan="20"><b>  No record found </b></td>
+
+                                                        </tr>
+                                                    }
+                                                }
+
+
+
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                        </fieldset>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="row">
+            <div class="col-lg-12">
+
+                <div class="d-flex justify-content-end align-items-center">
+                    @* <button type="reset" onclick="resetAnyFormById('data-insert-form');" class="btn btn-light" id="reset">Reset <i class="icon-reload-alt ml-2"></i></button>*@
+                    <button type="submit" onclick="UpdateFormRecord();" class="btn btn-primary ml-3"><span id="lbl_prd_form_update_btn">Update</span>  <i class="icon-paperplane ml-2"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+
+
+
+</div>
+@section  Scripts{
+
+    <!-- TinyMCE Plugin -->
+    <script type="text/javascript" src="~/content/themeContent/global_assets/js/plugins/editors/tinymce/tinymce.min.js"></script>
+
+    <script type="text/javascript">
+        tinymce.init({
+            selector: '#FullDescription',
+            menubar: false,   //--menu bar should be false
+            height: 350,    //--height of text editor
+            // skin: "oxide-dark", //--for dark them, if no need of dark them then remove this attribute
+            //  content_css: "dark", //--for dark theme, if no need of dark them then remove this attribute
+            branding: false, //--remove bottom logo (Powered by tiny)
+
+            //--basic plugins
+            plugins: [
+                'advlist  lists autolink link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+            ],
+
+            //--toolbar option like undo, text color setting, text background color setting etc
+            toolbar: 'undo redo | formatselect fontselect fontsizeselect | ' +
+                'image media link | bold italic underline | backcolor forecolor | alignleft aligncenter ' +
+                'alignright alignjustify | bullist numlist outdent indent | casechange | ' +
+                'removeformat | preview | help',
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:12px }'
+
+
+            //setup: function (editor) {
+            //    editor.on('change', function (e) {
+            //        editor.save();
+            //    });
+            //}
+        });
+
+        //For setting content of text area
+        // tinymce.get("Specification_1Update").setContent(htmlSepicificaton1Update)
+
+
+    </script>
+
+
+
+    <script>
+
+        // ✅ This will get data drop down for tags from data base
+        $(document).ready(function () {
+            $("#SelectedTagIds").select2({
+                //tags: true,
+                //multiple: true,
+                //tokenSeparators: [',', ' '],
+                minimumInputLength: 2,
+                minimumResultsForSearch: 10,
+                ajax: {
+                    url: '@Url.Action("GetTagsListByKeyword","ProductsCatalog" , new { langCode = Model?.PageBasicInfoObj?.langCode })',
+                    dataType: "json",
+                    type: "GET",
+                    delay: 250,
+                    data: function (params) {
+
+                        var queryParameters = {
+                            term: params.term
+                        }
+                        return queryParameters;
+                    },
+                    processResults: function (data) {
+                        debugger
+                        return {
+                            results: data.results
+                        };
+                    },
+                    cache: true
+                }
+            });
+        });
+
+
+
+
+
+        function UpdateFormRecord() {
+
+            debugger
+
+            // ✅ Trigger Tiny MCE Save first of all so that it associate required field values with all text areas
+            tinymce.triggerSave()
+
+            // ✅ On formt submit,fire event prevent
+            $("#data-insert-form").submit(function (e) {
+                e.preventDefault();
+            });
+
+            // ✅ Check if form is valid
+            if (!$("#data-insert-form").valid()) {
+                event.preventDefault();
+                showSuccessErrorMsg("error", "Error", "Please fill all required fields!");
+                return false;
+            }
+
+            // ✅ Check the validation of form in a new additional way
+            if (!validateInsertForm("data-insert-form")) {
+                event.preventDefault();
+                showSuccessErrorMsg("error", "Error", "Please fill all required fields!");
+                return false;
+            }
+
+            //-- #region All fields values getting area starts here
+            let ProductId = $("#ProductId").val();
+            let ProductName = $("#ProductName").val();
+            let ShortDescription = $("#ShortDescription").val().trim();
+            let FullDescription = tinymce.get("FullDescription").getContent();  //--do not add "#" sign here in case of tiny mce with input id
+            let ManufacturerId = $("#ManufacturerId").val();
+            let VendorId = $("#VendorId").val();
+            let IsActive = ($('#IsActive').is(":checked") == true) ? true : false;
+            let ShowOnHomePage = ($('#ShowOnHomePage').is(":checked") == true) ? true : false;
+            let MarkAsNew = ($('#MarkAsNew').is(":checked") == true) ? true : false;
+            let AllowCustomerReviews = ($('#AllowCustomerReviews').is(":checked") == true) ? true : false;
+            let SellStartDatetimeUtc = $("#SellStartDatetimeUtc").val();
+            let SellEndDatetimeUtc = $("#SellEndDatetimeUtc").val();
+            let Sku = $("#Sku").val();
+            let Price = $("#Price").val();
+            let OldPrice = $("#OldPrice").val();
+            let IsDiscountAllowed = ($('#IsDiscountAllowed').is(":checked") == true) ? true : false;
+            let IsShippingFree = ($('#IsShippingFree').is(":checked") == true) ? true : false;
+            let ShippingCharges = $("#ShippingCharges").val();
+            let EstimatedShippingDays = $("#EstimatedShippingDays").val();
+            let IsReturnAble = ($('#IsReturnAble').is(":checked") == true) ? true : false;
+            let InventoryMethodID = $("#InventoryMethodID").val();
+            let WarehouseId = $("#WarehouseId").val();
+            let StockQuantity = $("#StockQuantity").val();
+            let IsBoundToStockQuantity = ($('#IsBoundToStockQuantity').is(":checked") == true) ? true : false;
+            let DisplayStockQuantity = ($('#DisplayStockQuantity').is(":checked") == true) ? true : false;
+            let OrderMinimumQuantity = $("#OrderMinimumQuantity").val();
+            let OrderMaximumQuantity = $("#OrderMaximumQuantity").val();
+            let MetaTitle = $("#MetaTitle").val();
+            let MetaKeywords = $("#MetaKeywords").val();
+            let MetaDescription = $("#MetaDescription").val();
+
+            var ProductImages = $("#ProductImages").get(0).files;
+
+            debugger
+            // ✅ select2 javascript drodown values gathering
+            let SelectedCategoryIdsArray = $("#SelectedCategoryIds").select2('data');
+            let SelectedCategoriesJson = (SelectedCategoryIdsArray != null && SelectedCategoryIdsArray != undefined && SelectedCategoryIdsArray.length > 0) ? (SelectedCategoryIdsArray.map(function (a) { return a.id; })).toString() : "";
+            let SelectedTagIdsArray = $("#SelectedTagIds").select2('data');
+            let SelectedTagsJson = (SelectedTagIdsArray != null && SelectedTagIdsArray != undefined && SelectedTagIdsArray.length > 0) ? (SelectedTagIdsArray.map(function (a) { return a.id; })).toString() : "";
+            let SelectedDiscountIdsArray = $("#SelectedDiscountIds").select2('data');
+            let SelectedDiscountsJson = (SelectedDiscountIdsArray != null && SelectedDiscountIdsArray != undefined && SelectedDiscountIdsArray.length > 0) ? (SelectedDiscountIdsArray.map(function (a) { return a.id; })).toString() : "";
+
+            let SelectedShippingMethodIdsArray = $("#SelectedShippingMethodIds").select2('data');
+            let SelectedShippingMethodsJson = (SelectedShippingMethodIdsArray != null && SelectedShippingMethodIdsArray != undefined && SelectedShippingMethodIdsArray.length > 0) ? (SelectedShippingMethodIdsArray.map(function (a) { return a.id; })).toString() : "";
+
+            if (!checkIfStringIsEmtpy(SelectedCategoriesJson)) {
+                showSuccessErrorMsg("error", "Error", "Please select category");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(SelectedShippingMethodsJson)) {
+                showSuccessErrorMsg("error", "Error", "Please select shipping method!");
+                return false;
+            }
+
+            if (checkIfStringIsEmtpy(FullDescription)) {
+
+               FullDescription = setProductDescriptionImagesUrl(FullDescription);
+            }
+
+
+
+            //-- #endRegion All fields values getting area ends here
+
+            //--#Region product attributes get values
+            var ProductAttributesTableRows = [];
+
+            $('.product-attribute-row').each(function () {
+
+
+                let data_ProductAttributeMappingID = $(this).attr("data_ProductAttributeMappingID");
+                let data_ProductAttributeId = $(this).attr("data_ProductAttributeId");
+                let data_AttributeValue = $(this).attr("data_AttributeValue");
+                let data_PriceAdjustmentType = $(this).attr("data_PriceAdjustmentType");
+                let data_PriceAdjustment = $(this).attr("data_PriceAdjustment");
+
+                if (!checkIfStringIsEmtpy(data_ProductAttributeId) || !checkIfStringIsEmtpy(data_AttributeValue)) {
+                    return false;
+                }
+
+                ProductAttributesTableRows.push({
+                    ProductAttributeMappingID: data_ProductAttributeMappingID,
+                    ProductAttributeId: data_ProductAttributeId,
+                    AttributeValue: data_AttributeValue,
+                    PriceAdjustmentType: data_PriceAdjustmentType,
+                    PriceAdjustment: data_PriceAdjustment
+
+                });
+            });
+
+            var ProductAttributesJson = ProductAttributesTableRows.length == 0 ? "[]" : JSON.stringify(ProductAttributesTableRows);
+
+            //--#endRegion product attributes
+
+
+            //-- #region Form initialization area starts here
+            var fileData = new FormData();
+
+            for (var i = 0; i < ProductImages.length; i++) {
+                fileData.append("ProductImages", ProductImages[i]);
+            }
+            fileData.append("ProductId", ProductId);
+            fileData.append("ProductName", ProductName);
+            fileData.append("ShortDescription", ShortDescription);
+            fileData.append("FullDescription", FullDescription);
+            fileData.append("ManufacturerId", ManufacturerId);
+            fileData.append("VendorId", VendorId);
+            fileData.append("IsActive", IsActive);
+            fileData.append("ShowOnHomePage", ShowOnHomePage);
+            fileData.append("MarkAsNew", MarkAsNew);
+            fileData.append("AllowCustomerReviews", AllowCustomerReviews);
+            fileData.append("SellStartDatetimeUtc", SellStartDatetimeUtc);
+            fileData.append("SellEndDatetimeUtc", SellEndDatetimeUtc);
+            fileData.append("Sku", Sku);
+            fileData.append("Price", Price);
+            fileData.append("OldPrice", OldPrice);
+            fileData.append("IsDiscountAllowed", IsDiscountAllowed);
+            fileData.append("IsShippingFree", IsShippingFree);
+            fileData.append("ShippingCharges", ShippingCharges);
+            fileData.append("EstimatedShippingDays", EstimatedShippingDays);
+            fileData.append("IsReturnAble", IsReturnAble);
+            fileData.append("InventoryMethodID", InventoryMethodID);
+            fileData.append("WarehouseId", WarehouseId);
+            fileData.append("StockQuantity", StockQuantity);
+            fileData.append("IsBoundToStockQuantity", IsBoundToStockQuantity);
+            fileData.append("DisplayStockQuantity", DisplayStockQuantity);
+            fileData.append("OrderMinimumQuantity", OrderMinimumQuantity);
+            fileData.append("OrderMaximumQuantity", OrderMaximumQuantity);
+            fileData.append("MetaTitle", MetaTitle);
+            fileData.append("MetaKeywords", MetaKeywords);
+            fileData.append("MetaDescription", MetaDescription);
+
+            fileData.append("SelectedCategoriesJson", SelectedCategoriesJson);
+            fileData.append("SelectedTagsJson", SelectedTagsJson);
+            fileData.append("SelectedDiscountsJson", SelectedDiscountsJson);
+            fileData.append("SelectedShippingMethodsJson", SelectedShippingMethodsJson);
+            fileData.append("ProductAttributesJson", ProductAttributesJson);
+            //-- #endRegion Form initialization area ends here
+
+
+            if (!checkIfStringIsEmtpy(ProductId)) {
+                showSuccessErrorMsg("error", "Error", "ProductId is null");
+                return false;
+            }
+
+
+            let saveUrl = "@Url.Action("UpdateProductPost", "ProductsCatalog" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: fileData,
+                success: function (data) {
+
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", data.message);
+
+                        setTimeout(function () {
+                            window.location.href = "@Url.Action("ProductsList","ProductsCatalog" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+                        }, 1000);
+
+                    }
+                    else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showSuccessErrorMsg("error", "Error", "Something went wrong. Please try again");
+                }
+            });
+
+        }
+
+
+
+        function EnableShippingChargesBox() {
+            let IsShippingFree = ($('#IsShippingFree').is(":checked") == true) ? true : false;
+            if (IsShippingFree) {
+                $("#ShippingChargesDiv").css("display", "none");
+                $("#ShippingCharges").val("");
+            } else {
+                $("#ShippingChargesDiv").css("display", "flex");
+            }
+        }
+
+        function EnableDiscountsDropDown() {
+            let IsDiscountAllowed = ($('#IsDiscountAllowed').is(":checked") == true) ? true : false;
+            if (IsDiscountAllowed) {
+                $("#SelectedDiscountIdsDiv").css("display", "flex");
+
+            } else {
+                $("#SelectedDiscountIdsDiv").css("display", "none");
+                $("#SelectedDiscountIds").val("");
+                $("#SelectedDiscountIds").val("").trigger("change");
+            }
+        }
+
+
+
+        function GetProductAttributeValuesByAttributeID() {
+
+
+            let ProductAttributeId = $('#ProductAttributeId').val();
+
+            if (!checkIfStringIsEmtpy(ProductAttributeId)) {
+                return false;
+            }
+
+
+            //--make form data
+            var formDate = {
+                ProductAttributeId: ProductAttributeId
+            }
+
+            let saveUrl = "@Url.Action("GetProductAttributeValuesByAttributeID", "ProductsCatalog" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "GET",
+                url: saveUrl,
+                data: formDate,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function (data) {
+
+                    if (data.success) {
+                        let s = '<option value="">Select an Attribute value...</option>';
+                        for (var i = 0; i < data.result.length; i++) {
+                            s += '<option value="' + data.result[i].displayValue + '">' + data.result[i].displayText + '</option>';
+                        } $("#AttributeValue").html(s);
+                    } else {
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+
+        }
+
+
+        function AddProductAttributeRow() {
+            event.preventDefault();
+
+
+            //--get values of fields
+            let ProductAttributeId = $("#ProductAttributeId").val();
+            let PriceAdjustmentType = $("#PriceAdjustmentType").val();
+            let PriceAdjustment = $("#PriceAdjustment").val();
+            let AttributeValue = $("#AttributeValue").val();
+
+            PriceAdjustment = PriceAdjustment == undefined || PriceAdjustment < 0 || PriceAdjustment == '' ? 0 : PriceAdjustment;
+
+            //--get text of fields
+            let ProductAttributeIdText = $("#ProductAttributeId option:selected").text();
+            let AttributeValueText = $("#AttributeValue option:selected").text();
+            let PriceAdjustmentTypeText = $("#PriceAdjustmentType option:selected").text();
+
+            //--check for null or empty
+            if (!checkIfStringIsEmtpy(ProductAttributeId)) {
+                showSuccessErrorMsg("error", "Error", "Please select product attribute!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(PriceAdjustmentType)) {
+                showSuccessErrorMsg("error", "Error", "Please select price adjustment type!");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(AttributeValue)) {
+                showSuccessErrorMsg("error", "Error", "Please select attribute value type!");
+                return false;
+            }
+
+
+            //--check if row already exists in table
+            let isRowExists = false;
+            $('.product-attribute-row').each(function () {
+
+                let data_ProductAttributeId = $(this).attr("data_ProductAttributeId");
+                let data_AttributeValue = $(this).attr("data_AttributeValue");
+                if (ProductAttributeId == data_ProductAttributeId && AttributeValue == data_AttributeValue) {
+                    isRowExists = true;
+                }
+
+            });
+
+            if (isRowExists == true) {
+                event.preventDefault();
+                showSuccessErrorMsg("error", "Error", "This attribute already exists!");
+                return false;
+            }
+
+            //--check if no data row exists in table, then remove
+            if ($("#product_attribute_no_data_row").length) {
+                $("#product_attribute_no_data_row").remove();
+            }
+
+            //--Make table row
+            $('#product_attributes_table tbody').append("<tr>"
+                + "<td> "
+                + "<input type='hidden' data_ProductAttributeMappingID='-1' class='product-attribute-row' data_ProductAttributeId='" + ProductAttributeId + "' data_AttributeValue='" + AttributeValue + "'  data_PriceAdjustmentType='" + PriceAdjustmentType + "' data_PriceAdjustment='" + PriceAdjustment + "'/>"
+                + ProductAttributeIdText
+                + "</td>"
+                + "<td> " + AttributeValueText + "</td>"
+                + "<td> " + PriceAdjustmentTypeText + "</td>"
+                + "<td> " + PriceAdjustment + "</td>"
+                + "<td>"
+                + "<div class=''>"
+
+                + "<a href='#!' class='dropdown-item text-pink-600' onclick='DeleteProductAttributeRow( this,-1);'>"
+                + "<i class='icon-trash'></i> Delete"
+                + "</a>"
+                + "</div> "
+                + "</td>"
+                + "</tr>");
+
+
+        }
+
+
+        function DeleteProductAttributeRow(thisParam, ProductAttributeMappingID) {
+            event.preventDefault();
+
+            let confirmClick = confirm('Do you really want to remove this record?');
+            if (confirmClick) {
+                debugger
+                if (ProductAttributeMappingID == -1) {//-- delete only temperory row that is not saved on data base
+                    $(thisParam).closest('tr').remove();
+                    return true;
+                } else {//--delete permanently
+
+                    var formData = {
+                        EntityId: '@(Model?.PageBasicInfoObj?.EntityId ?? 0)',
+                        primarykeyValue: ProductAttributeMappingID,
+                        primaryKeyColumn: "ProductAttributeMappingID",
+                        tableName: "Product_ProductAttribute_Mapping",
+                        SqlDeleteType: "@((short)SqlDeleteTypes.PlainTableDelete)"
+
+                    }
+
+                    $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("DeleteAnyRecord", "Dynamic" , new { langCode = Model?.PageBasicInfoObj?.langCode })',
+                        data: formData,
+                        success: function (data) {
+
+                            if (data.success) {
+                                showSuccessErrorMsg("success", "Success", data.message);
+                                $(thisParam).closest('tr').remove();
+                            }
+                            else {
+
+                                showSuccessErrorMsg("error", "Error", "Something went wrong during saving of record");
+                            }
+
+
+                        },
+                        error: function (xhr, ajaxOptions, thrownError) {
+
+                            showSuccessErrorMsg("error", "Error", "An error occured. Please try again.");
+                        }
+                    });
+                }
+
+            }
+
+        }
+
+        function DeleteProductImage(thisParam, AttachmentID, AttachmentURL) {
+            event.preventDefault();
+
+            let confirmClick = confirm('Do you really want to remove this record?');
+            if (confirmClick) {
+                var formData = {
+                    primarykeyValue: AttachmentID,
+                    primaryKeyColumn: "AttachmentID",
+                    tableName: "Attachments",
+                    AttachmentURL: AttachmentURL,
+                    SqlDeleteType: "@((short)SqlDeleteTypes.ForeignKeyDelete)"
+
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("DeleteProductAttachment", "ProductsCatalog" , new { langCode = Model?.PageBasicInfoObj?.langCode })',
+                    data: formData,
+                    success: function (data) {
+
+                        if (data.success) {
+                            showSuccessErrorMsg("success", "Success", data.message);
+                            $(thisParam).closest('tr').remove();
+                        }
+                        else {
+
+                            showSuccessErrorMsg("error", "Error", "Something went wrong during saving of record");
+                        }
+
+
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+
+                        showSuccessErrorMsg("error", "Error", "An error occured. Please try again.");
+                    }
+                });
+
+
+            }
+
+        }
+
+    </script>
+
+}

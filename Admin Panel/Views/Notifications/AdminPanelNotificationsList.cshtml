@@ -1,0 +1,299 @@
+﻿@model Entities.MainModels.NotificationsModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+}
+
+
+<!--Page specific java script-->
+<script src="~/content/themeContent/global_assets/js/demo_pages/form_checkboxes_radios.js"></script>
+<!--/Page specific java script-->
+@{
+    List<SelectListItem> IsReadList = new List<SelectListItem>();
+    IsReadList.Add(new SelectListItem { Value = "true", Text = "Read" });
+    IsReadList.Add(new SelectListItem { Value = "false", Text = "UnRead" });
+
+    Dictionary<string, string>? IsReadDropdownDictionay = new Dictionary<string, string>();
+    IsReadDropdownDictionay = IsReadList.ToDictionary(v => v.Value, t => t.Text);
+
+
+}
+
+
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = false,
+                ShowActionsButton = false,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = false,
+                DataExportUrl = Url.Action("AdminPanelNotificationsList", "Notifications", new { langCode = Model?.PageBasicInfoObj?.langCode })
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @{
+                SearchFilterModel filter = new SearchFilterModel();
+
+                #region basic settings
+                filter.SearchJSFunctionName = "SearchRecord();";
+                filter.SearchButtonType = "button";
+                filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                filter.SearchURL = Url.Action("AdminPanelNotificationsList", "Notifications", new { langCode = Model?.PageBasicInfoObj?.langCode });
+                #endregion
+
+                filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+            new HtmlFormFieldsEntity(){ FieldID = "Title", FieldName="Title",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Title", LabelText="Title", ToolTipText="Title of notification", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "IsReadNullProperty", FieldName="IsReadNullProperty",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Read Status", LabelText="Read Status", ToolTipText="Read status of notificaitons", DropdownData=IsReadDropdownDictionay},
+            new HtmlFormFieldsEntity(){ FieldID = "FromDate", FieldName="FromDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="From Date", LabelText="From Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ToDate", FieldName="ToDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="To Date", LabelText="To Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+    <!-- Inverse colors -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        @* <div class="card-body">
+
+        <div class="row">
+        <div class="col-lg-12 col-md-12">
+
+        <div class="table-responsive" id="main_data_table">
+        @await Html.PartialAsync("~/Views/Notifications/PartialViews/_AdminPanelNotificationsList.cshtml", Model)
+        </div>
+
+        </div>
+        </div>
+
+
+        </div>*@
+
+
+        <!-- Single line -->
+        <div class="card">
+
+
+            <!-- Action toolbar -->
+            <div class="bg-light">
+                <div class="navbar navbar-light bg-light navbar-expand-lg py-lg-2">
+                    <div class="text-center d-lg-none w-100">
+                        <button type="button" class="navbar-toggler w-100" data-toggle="collapse" data-target="#inbox-toolbar-toggle-single">
+                            <i class="icon-circle-down2"></i>
+                        </button>
+                    </div>
+
+                    <div class="navbar-collapse text-center text-lg-left flex-wrap collapse" id="inbox-toolbar-toggle-single">
+                        <div class="mt-3 mt-lg-0">
+
+                            <div class="btn-group ml-3 mr-lg-3">
+                                <button type="button" class="btn btn-light" onclick="MarkAllAdminNotificationsAsRead()"><i class="icon-pencil7"></i> <span class="d-none d-lg-inline-block ml-2" id="lbl_mark_all_as_read">Mark All As Read</span></button>
+                                <button type="button" class="btn btn-light" onclick="MarkOnlySelectedAdminNotificationsAsRead()"><i class="icon-bin"></i> <span class="d-none d-lg-inline-block ml-2" id="lbl_mark_selected_as_read">Mark Selected As Read</span></button>
+
+                            </div>
+                        </div>
+
+
+
+
+                    </div>
+                </div>
+            </div>
+            <!-- /action toolbar -->
+            <!-- Table -->
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12 p-3">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/Notifications/PartialViews/_AdminPanelNotificationsList.cshtml", Model)
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- /table -->
+
+        </div>
+        <!-- /single line -->
+
+
+
+    </div>
+
+
+
+
+</div>
+@section  Scripts{
+
+    <script>
+
+        function MarkAllAdminNotificationsAsRead() {
+
+
+            let resultConfirm = confirm("Do you really want to mark all as read?");
+            if (!resultConfirm) {
+                return false;
+            }
+
+            let formData = {
+
+            }
+
+            let saveUrl = "@Url.Action("MarkAllAdminNotificationsAsRead", "Notifications" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: formData,
+                success: function(data) {
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", data.message);
+
+                        setTimeout(function() {
+                            window.location.href = "@Url.Action("AdminPanelNotificationsList","Notifications" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+                        }, 1000);
+
+                    }
+                    else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showSuccessErrorMsg("error", "Error", "Something went wrong. Please try again");
+                }
+            });
+
+        }
+
+        function MarkOnlySelectedAdminNotificationsAsRead() {
+
+            debugger
+
+            let resultConfirm = confirm("Do you really want to mark all as read?");
+            if (!resultConfirm) {
+                return false;
+            }
+
+            let selectedNotificationsIdsForRead = [];
+
+            $('.different_admin_notifications').children('tr').each(function() {
+
+
+                let notification_id = $(this).find(".notification_id").val();
+                let IsRowChecked = ($(this).find(".is_notification_selected_for_read").is(":checked") == true) ? true : false;
+
+                if (IsRowChecked) {
+                    selectedNotificationsIdsForRead.push({
+                        NotificationId: notification_id
+                    });
+                }
+
+
+            });
+
+            var SelectedNotificationsIdsForReadJson = selectedNotificationsIdsForRead.length == 0 ? "[]" : JSON.stringify(selectedNotificationsIdsForRead);
+
+            if (!checkIfStringIsEmtpy(SelectedNotificationsIdsForReadJson)) {
+                showSuccessErrorMsg("error", "Error", "No notification found for marking");
+                return false;
+            }
+
+
+            var formData = new FormData();
+            formData.append("SelectedNotificationsIdsForReadJson", SelectedNotificationsIdsForReadJson);
+
+
+            let saveUrl = "@Url.Action("MarkOnlySelectedAdminNotificationsAsRead", "Notifications" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: formData,
+                success: function(data) {
+
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", data.message);
+
+                        setTimeout(function() {
+                            window.location.href = "@Url.Action("AdminPanelNotificationsList","Notifications" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+                        }, 1000);
+
+                    }
+                    else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showSuccessErrorMsg("error", "Error", "Something went wrong. Please try again");
+                }
+            });
+        }
+    </script>
+
+}

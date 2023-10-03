@@ -1,0 +1,233 @@
+﻿@model Entities.CommonModels.HtmlBootstrapModalEntity
+
+
+@{
+    string ModalTitleId = !String.IsNullOrWhiteSpace(Model?.ModalDivId) ? "lbl_" + (Model?.ModalDivId + "_title") : "lbl_title_dynamic_insert_form";
+    string DynamicFormSaveButtonId = !String.IsNullOrWhiteSpace(Model?.ModalDivId) ? "lbl_" + (Model?.ModalDivId + "_save_btn") : "lbl_dynamic_form_save_btn";
+    string DynamicFormCloseButtonId = !String.IsNullOrWhiteSpace(Model?.ModalDivId) ? "lbl_" + (Model?.ModalDivId + "_close_btn") : "lbl_dynamic_form_close_btn";
+}
+
+
+<div id="@(Model!=null?Model.ModalDivId: "")" class="modal fade" tabindex="-1" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header site-bg-modal-header">
+              
+                <h5 class="modal-title" id="@(ModalTitleId)">@(Model != null ? Model.ModalTitle : "")</h5>
+                <button type="button" class="close" data-dismiss="modal">×</button>
+            </div>
+
+            <form method="post" asp-area="" asp-controller="" asp-action="" id="@(Model!=null?Model.FormId: "")" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="row">
+
+
+                            @{
+
+                                if (Model != null && Model.htmlFormFieldsEntities != null && Model.htmlFormFieldsEntities.Count > 0)
+                                {
+                                    foreach (var field in Model.htmlFormFieldsEntities)
+                                    {
+                                        string GridColumnClass = String.IsNullOrWhiteSpace(field.GridColumnClass) ? "col-sm-12 col-lg-6 col-md-6" : field.GridColumnClass;
+                                        string FieldRequired = field.IsRequired ? "required" : "";
+                                        string FieldReadOnly = field.IsReadOnly ? "readonly" : "";
+                                        field.LabelID = "lbl_" + field.FieldID;
+
+                                        if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Search)
+                                        {
+                                            <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                                <label id="@field.LabelID">@field.LabelText </label>
+                                                <input type="search" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" @FieldRequired>
+
+                                            </div>
+
+
+
+                                        }
+                                        else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Date)
+                                        {
+
+                                            <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                                <label id="@field.LabelID">@field.LabelText </label>
+                                                <div class="input-group">
+                                                    <span class="input-group-prepend">
+                                                        <span class="input-group-text"><i class="icon-calendar22 mr-2"></i></span>
+                                                    </span>
+                                                    <input type="text" class="form-control date-filter-exclude pickadate" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText &hellip;" @FieldRequired>
+                                                </div>
+
+                                            </div>
+
+                                        }
+                                        else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Text)
+                                        {
+                                            <div class="@GridColumnClass">
+
+                                                <label id="@field.LabelID">@field.LabelText </label>
+                                                <input type="text" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" @FieldRequired @FieldReadOnly>
+
+                                            </div>
+
+                                        }
+                                        else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Number)
+                                        {
+                                            <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                                <label id="@field.LabelID">@field.LabelText </label>
+                                                <input type="number" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" @FieldRequired @FieldReadOnly>
+
+                                            </div>
+
+                                        }
+                                        else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Email)
+                                        {
+                                            <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                                <label id="@field.LabelID">@field.LabelText </label>
+                                                <input type="email" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" @FieldRequired @FieldReadOnly>
+
+                                            </div>
+
+                                        }
+
+                                        else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Password)
+                                        {
+                                            <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                                <label id="@field.LabelID">@field.LabelText </label>
+                                                <input type="password" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" @FieldRequired>
+
+                                            </div>
+
+                                        }
+                                        else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Dropdown)
+                                        {
+
+
+                                            <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                                <label id="@field.LabelID">@field.LabelText </label>
+
+
+                                                @if (field.DropdownSelectType == (short)HtmlDropdownSelectType.Select2)
+                                                {
+                                                    <select class="form-control select-search" id="@field.FieldID" name="@field.FieldName" onchange="@field.FieldOnChangeFunction" @FieldRequired>
+                                                        <option value="">@field.PlaceHolderText</option>
+                                                        @{
+                                                            if (field.DropdownData != null && field.DropdownData.Count > 0)
+                                                            {
+                                                                foreach (var itm in field.DropdownData)
+                                                                {
+                                                                    if (itm.Key == field.DefaultValue)
+                                                                    {
+                                                                        <option value="@itm.Key" selected>@itm.Value</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@itm.Key">@itm.Value</option>
+                                                                    }
+
+                                                                }
+                                                            }
+                                                        }
+
+                                                    </select>
+                                                }
+                                                else
+                                                {
+                                                    <select class="form-control" id="@field.FieldID" name="@field.FieldName" onchange="@field.FieldOnChangeFunction" @FieldRequired>
+                                                        <option value="">@field.PlaceHolderText</option>
+                                                        @{
+                                                            if (field.DropdownData != null && field.DropdownData.Count > 0)
+                                                            {
+                                                                foreach (var itm in field.DropdownData)
+                                                                {
+                                                                    if (itm.Key == field.DefaultValue)
+                                                                    {
+                                                                        <option value="@itm.Key" selected>@itm.Value</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@itm.Key">@itm.Value</option>
+                                                                    }
+
+                                                                }
+                                                            }
+                                                        }
+
+                                                    </select>
+                                                }
+
+
+
+                                            </div>
+
+
+
+                                        }
+                                        else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Hidden)
+                                        {
+
+                                            <input type="hidden" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" @FieldRequired>
+
+                                        }
+                                        else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Color)
+                                        {
+                                            <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                                <label id="@field.LabelID">@field.LabelText </label>
+                                                <input type="color" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" @FieldRequired>
+
+                                            </div>
+                                        }
+                                        else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.File)
+                                        {
+                                            <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                                <label id="@field.LabelID">@field.LabelText </label>
+                                                <input type="file" class="form-control" id="@field.FieldID" name="@field.FieldName" placeholder="@field.PlaceHolderText" accept="image/*" @FieldRequired>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="col-sm-12 col-lg-6 col-md-6">
+
+                                                <label id="@field.LabelID">@field.LabelText </label>
+                                                <input type="text" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" @FieldRequired>
+
+                                            </div>
+                                        }
+                                    }
+
+                                }
+                            }
+
+
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline bg-teal-400 text-teal-400 border-teal-400 border-2" data-dismiss="modal" id="@DynamicFormCloseButtonId">Close</button>
+
+                    @{
+                        if (Model?.ShowSubmitButton==true)
+                        {
+                            <button type="submit" onclick="@(Model!=null?Model.SubmitBtnJsFunctionName: "")" class="btn bg-teal-400 btn-labeled"><i class="icon-stack-plus mr-2"></i> <span id="@DynamicFormSaveButtonId">@(Model != null ? Model.SubmitButtonText : "Save")</span> </button>
+                        }
+                    }
+                  
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

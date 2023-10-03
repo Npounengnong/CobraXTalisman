@@ -1,0 +1,43 @@
+﻿@model Entities.MainModels.DiscountModel
+
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+}
+
+
+ <!-- Modals area Edit starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityEdit = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityEdit.ModalTitle = "Update Campaign";
+        htmlBootstrapModalEntityEdit.ModalDivId = "EditDataModal";
+        htmlBootstrapModalEntityEdit.SubmitBtnJsFunctionName = "UpdateFormRecord();";
+        htmlBootstrapModalEntityEdit.SubmitButtonText = "Update";
+        htmlBootstrapModalEntityEdit.FormId = "data-edit-common-form";
+        htmlBootstrapModalEntityEdit.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+    htmlBootstrapModalEntityEdit.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+    new HtmlFormFieldsEntity(){ FieldID = "MainTitleUpdate", FieldName="MainTitleUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Main title", LabelText="Main Title", IsRequired=true , DefaultValue = Model?.DiscountsCampaignObj?.MainTitle},
+    new HtmlFormFieldsEntity(){ FieldID = "DiscountTitleUpdate", FieldName="DiscountTitleUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Discount title", LabelText="Discount Title", IsRequired=true , DefaultValue = Model?.DiscountsCampaignObj?.DiscountTitle},
+    new HtmlFormFieldsEntity(){ FieldID = "BodyUpdate", FieldName="BodyInsert",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Body", LabelText="Body", IsRequired=true , GridColumnClass = "col-sm-12 col-lg-12 col-md-12", DefaultValue = Model?.DiscountsCampaignObj?.Body},
+    new HtmlFormFieldsEntity(){ FieldID = "DisplayStartDateUpdate", FieldName="DisplayStartDateUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="Display start date", LabelText="Display Start Date", IsRequired=true, DefaultValue = Model?.DiscountsCampaignObj?.DisplayStartDate.ToString("dd MMM, yyyy") },
+    new HtmlFormFieldsEntity(){ FieldID = "DisplayEndDateUpdate", FieldName="DisplayEndDateUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="Display end date", LabelText="Display End Date", IsRequired=true , DefaultValue = Model?.DiscountsCampaignObj?.DisplayEndDate.ToString("dd MMM, yyyy") },
+    new HtmlFormFieldsEntity(){ FieldID = "IsActiveUpdate", FieldName="IsActiveUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select status", LabelText="Is Active", IsRequired=true,DropdownSelectType = (short)HtmlDropdownSelectType.Simple , DropdownData=IsActiveDropDown, DefaultValue =(Model?.DiscountsCampaignObj?.IsActive==true ? "true" : "false")},
+    new HtmlFormFieldsEntity(){ FieldID = "CoverPictureFileUpdate", FieldName="CoverPictureFileUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.File, PlaceHolderText="Select Cover File", LabelText="Cover Picture", IsRequired=false},
+      new HtmlFormFieldsEntity(){ FieldID = "CoverPictureIdUpdate", FieldName="CoverPictureIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden , DefaultValue = Model?.DiscountsCampaignObj?.CoverPictureId!=null ? Model?.DiscountsCampaignObj?.CoverPictureId.ToString() : "" },
+    new HtmlFormFieldsEntity(){ FieldID = "CampaignIdUpdate", FieldName="CampaignIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden ,DefaultValue = Model?.DiscountsCampaignObj?.CampaignId.ToString()},
+    };
+
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityEdit)
+
+    <!-- /Modals area Edit ends here-->
+

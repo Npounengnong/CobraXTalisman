@@ -1,0 +1,1021 @@
+﻿@model Entities.MainModels.SalesModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+
+    #endregion
+
+}
+
+
+<!--Page specific java script-->
+<script src="~/content/themeContent/global_assets/js/demo_pages/form_checkboxes_radios.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/plugins/purify.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/plugins/sortable.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/fileinput.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/demo_pages/uploader_bootstrap.js"></script>
+<!--/Page specific java script-->
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+
+}
+
+
+
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = false,
+                ShowActionsButton = true,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = false,
+                ShowPrintInvoiceButton = true,
+                ShowGoBackButton = true
+
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+
+    <form class="form-validate-jquery" id="data-insert-form" action="#">
+
+
+        <div class="card border-left-3 border-left-slate">
+            <div class="card-header header-elements-inline">
+                <h6 class="card-title" id="lbl_order_detail_title">Order Detail</h6>
+                <div class="header-elements">
+                    <div class="list-icons">
+                        <a class="list-icons-item" data-action="collapse"></a>
+                        @*  <a class="list-icons-item" data-action="reload"></a>
+                        <a class="list-icons-item" data-action="remove"></a>*@
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <ul class="nav nav-tabs nav-tabs-highlight mb-0">
+                    <li class="nav-item"><a href="#bordered-tab1" class="nav-link active" data-toggle="tab"><i class="icon-info3 mr-2"></i><span id="lbl_order_info_tab">Order Info</span> </a></li>
+                    <li class="nav-item"><a href="#bordered-tab2" class="nav-link" data-toggle="tab"><i class="fas fa-shipping-fast mr-2"></i> <span id="lbl_order_shipping_tab"> Shipping Detail</span>  </a></li>
+                    <li class="nav-item"><a href="#bordered-tab3" class="nav-link" data-toggle="tab"> <i class="fas fa-sticky-note mr-2"></i><span id="lbl_order_ordernot_tab">Order Note</span> </a></li>
+                    <li class="nav-item"><a href="#bordered-tab4" class="nav-link" data-toggle="tab"><i class="icon-price-tag3 mr-2"></i><span id="lbl_order_payment_tab"> Payment Detail</span></a></li>
+
+                </ul>
+
+                <div class="tab-content card card-body border-top-0 rounded-top-0 mb-0">
+                    <div class="tab-pane fade show active" id="bordered-tab1">
+                        <fieldset class="mb-3">
+
+
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_order_id">Order Id</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="Order id of the product"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                    </label>
+                                    <input type="text" class="form-control" id="OrderId" name="OrderId" value="@ViewBag.OrderId" readonly>
+                                </div>
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_order_no">Order Number</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="It is the order number that print on invoice"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                    </label>
+                                    <input type="text" class="form-control" id="OrderNumber" value="@(Model?.OrderObj?.OrderNumber ?? "")" readonly>
+                                </div>
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_order_status"> Order Status</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="The latest order status like active, in progress etc"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                    </label>
+                                    <input type="text" class="form-control" value="@(Model?.OrderObj?.LatestStatusName ?? "")" readonly>
+                                </div>
+                            </div>
+
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_customer">Customer</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="Name of the customer who placed order"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                    </label>
+                                    <input type="text" class="form-control" value="@(Model?.OrderObj?.CustomerName ?? "")" readonly>
+                                </div>
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_customer"> Order Date</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="Order placement date"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                    </label>
+
+                                    @{
+                                        string OrderDateUtc = Model?.OrderObj?.OrderDateUtc != null ?
+                                        Convert.ToDateTime(Model.OrderObj.OrderDateUtc).ToString("dd MMM, yyyy") : "";
+                                    }
+                                    <input type="text" class="form-control" value="@(OrderDateUtc)" readonly>
+                                </div>
+
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_customer"> Order Total</span>
+                                        <span data-popup="tooltip" title="" data-placement="right" data-original-title="Total of this order"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                    </label>
+                                    <input type="text" class="form-control" value="@(CommonConversionHelper.GetDefaultCurrencySymbol())@(Model?.OrderObj?.OrderTotal)" readonly>
+                                </div>
+
+                            </div>
+
+                            <div class="row border-top-blue-custom mt-2">
+
+
+                                <div class="col-lg-12">
+
+                                    <div class="d-flex justify-content-start align-items-center">
+                                        <h6 class="mb-2 mt-2 font-weight-semibold">Order Items</h6>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-12">
+                                    <div class="table-responsive" id="product_attribute_data_table">
+                                        <table class="table site-table-listing" id="product_attributes_table">
+                                            <thead>
+                                                <tr>
+                                                    <th id="lbl_hdr_orderItemId"> Order Item ID</th>
+                                                    <th id="lbl_hdr_orderPrdImg"> Product Image</th>
+                                                    <th id="lbl_hdr_orderProduct"> Product</th>
+                                                    <th id="lbl_hdr_orderVendorName"> Vendor Name</th>
+                                                    <th id="lbl_hdr_orderPrice">Price </th>
+                                                    <th id="lbl_hdr_orderQuantity">Quantity</th>
+
+                                                    <th id="lbl_hdr_orderItemTotal">Order Item Total</th>
+                                                    <th class="text-center" style="width: 20px;"><i class="icon-arrow-down12"></i></th>
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+
+                                                    if (Model != null && Model.OrderItemsList != null)
+                                                    {
+                                                        foreach (var item in Model.OrderItemsList)
+                                                        {
+                                                            string VendorFirstName = String.IsNullOrWhiteSpace(item.VendorFirstName) ? "" : item.VendorFirstName;
+                                                            string VendorLastName = String.IsNullOrWhiteSpace(item.VendorLastName) ? "" : item.VendorLastName;
+                                                            string VendorFullName = VendorFirstName + " " + VendorLastName;
+                                                            <tr>
+                                                                <td>
+
+                                                                    @item.OrderItemId
+                                                                </td>
+                                                                <td>
+                                                                    @{
+                                                                        string ImagePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot" + item.ProductDefaultImage);
+
+                                                                        if (System.IO.File.Exists(ImagePath))
+                                                                        {
+
+                                                                            <a href="@item.ProductDefaultImage" target="_blank">
+                                                                                <img src="@item.ProductDefaultImage" class="" width="100" height="100" alt="">
+                                                                            </a>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <a href="/content/themeContent/global_assets/images/placeholders/placeholder.jpg" target="_blank">
+                                                                                <img src="/content/themeContent/global_assets/images/placeholders/placeholder.jpg" class="" width="100" height="100" alt="">
+                                                                            </a>
+                                                                        }
+                                                                    }
+                                                                </td>
+
+                                                                <td>
+                                                                    <a href="@Url.Action("UpdateProduct","ProductsCatalog", new {langCode = Model?.PageBasicInfoObj?.langCode, ProductId=item.ProductId})">
+                                                                        <span class="text-dark"> @(StringConversionHelper.TruncateAnyStringValue(@item.ProductName, 20, true))   </span>
+                                                                    </a>
+
+                                                                </td>
+                                                                <td>@VendorFullName</td>
+                                                                <td>@(CommonConversionHelper.GetDefaultCurrencySymbol())@item.Price</td>
+                                                                <td>@item.Quantity</td>
+
+                                                                <td><span class="text-dark"> @item.OrderItemTotal   </span></td>
+
+                                                                <td class="text-center">
+                                                                    <div class="list-icons">
+                                                                        <div class="dropdown">
+                                                                            <a href="#" class="list-icons-item" data-toggle="dropdown">
+                                                                                <i class="icon-menu9"></i>
+                                                                            </a>
+
+                                                                            <div class="dropdown-menu dropdown-menu-right">
+
+                                                                                <a href="#" class="dropdown-item text-indigo-600" onclick="showOrterItemVariants('@item.OrderItemId');"><i class="icon-eye"></i>Show Variants Detail</a>
+
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr id="product_attribute_no_data_row">
+                                                            <td class="text-center" colspan="20"><b>  No record found </b></td>
+
+                                                        </tr>
+                                                    }
+                                                }
+
+
+
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+
+
+                        </fieldset>
+                    </div>
+
+                    <div class="tab-pane fade" id="bordered-tab2">
+                        <fieldset class="mb-3">
+
+
+
+
+                            <div class="form-row">
+                                <div class="form-group col-md-6 col-lg-6">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_order_addressLineOne"> Address Line 1</span>
+                                    </label>
+                                    <input type="text" class="form-control" value="@(Model?.OrderShippingMasterData?.AddressLineOne ?? "")" readonly>
+                                </div>
+                                <div class="form-group col-md-6 col-lg-6">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_order_addressLineTwo">   Address Line 2</span>
+                                    </label>
+                                    <input type="text" class="form-control" value="@(Model?.OrderShippingMasterData?.AddressLineTwo ?? "")" readonly>
+                                </div>
+
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_order_country"> Country</span>
+                                    </label>
+                                    <input type="text" class="form-control" value="@(Model?.OrderShippingMasterData?.CountryName ?? "")" readonly>
+                                </div>
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_order_state"> State</span>
+                                    </label>
+                                    <input type="text" class="form-control" value="@(Model?.OrderShippingMasterData?.StateName ?? "")" readonly>
+                                </div>
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_order_city"> City</span>
+                                    </label>
+                                    <input type="text" class="form-control" value="@(Model?.OrderShippingMasterData?.CityName ?? "")" readonly>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_order_postal_code">  Postal Code</span>
+                                    </label>
+                                    <input type="text" class="form-control" value="@(Model?.OrderShippingMasterData?.PostalCode ?? "")" readonly>
+                                </div>
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_order_emailDetail">  Email</span>
+                                    </label>
+                                    <input type="text" class="form-control" value="@(Model?.OrderObj?.CustomerEmailAddress ?? "")" readonly>
+                                </div>
+                                <div class="form-group col-md-4 col-lg-4">
+                                    <label for="inputCity">
+
+                                        <span id="lbl_order_mobileDetail">  Mobile</span>
+                                    </label>
+                                    <input type="text" class="form-control" value="@(Model?.OrderObj?.CustomerMobileNo ?? "")" readonly>
+                                </div>
+                            </div>
+
+
+                            <div class="row border-top-blue-custom mt-2">
+
+
+                                <div class="col-lg-6 col-md-6 mt-3 mb-2">
+
+                                    <div class="d-flex justify-content-start align-items-center">
+                                        <h6 class="mb-2 mt-2 font-weight-semibold">Shipping Items Detail</h6>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6 col-md-6 mt-3 mb-2">
+
+                                    <div class="d-flex justify-content-end align-items-center">
+                                        <button type="button" onclick="SaveOrderItemsShippingDetails();" class="btn bg-purple-300 ml-3" id="lbl_save_shipping">Save Shipping Info</button>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-12">
+                                    <div class="table-responsive" id="product_attribute_data_table">
+                                        <table class="table site-table-listing" id="product_attributes_table">
+                                            <thead>
+                                                <tr>
+                                                    <th id="lbl_hdr_ship_id"> Shipping ID</th>
+                                                    <th id="lbl_hdr_ship_prdImg"> Product Image</th>
+                                                    <th id="lbl_hdr_ship_prdName"> Product Name</th>
+                                                    <th id="lbl_hdr_ship_fullName" style="white-space:nowrap;width:100%;">Shipper Full Name</th>
+                                                    <th id="lbl_hdr_ship_method" style="white-space:nowrap;width:100%;">Item Shipping Method</th>
+                                                    <th id="lbl_hdr_ship_status" style="white-space:nowrap;width:100%;"> Shipping Status</th>
+                                                    <th id="lbl_hdr_ship_departurDte" style="white-space:nowrap;width:100%;">Departure Date </th>
+                                                    <th id="lbl_hdr_ship_receivedDte" style="white-space:nowrap;width:100%;">Received Date </th>
+                                                    <th id="lbl_hdr_ship_receiverName" style="white-space:nowrap;width:100%;">Receiver Name</th>
+                                                    <th id="lbl_hdr_ship_receiverMob" style="white-space:nowrap;width:100%;">Receiver Mobile</th>
+                                                    <th id="lbl_hdr_ship_identityNo" style="white-space:nowrap;width:100%;">Identity No</th>
+
+
+                                                </tr>
+                                            </thead>
+                                            <tbody class="different-shipping-attributes">
+
+                                                @{
+
+                                                    if (Model != null && Model.OrderShippingDetailList != null)
+                                                    {
+                                                        foreach (var item in Model.OrderShippingDetailList)
+                                                        {
+                                                            var SelectedProductShippingMethods = JsonConvert.DeserializeObject<List<ProductShippingMethodsMapping>>(item.ProductShippingMethods ?? "[]");
+
+                                                            var ShippingMethodsList = new List<ShippingMethodEntity>();
+                                                            if (Model?.ShippingMethodsList != null)
+                                                            {
+                                                                foreach (var shipItm in Model.ShippingMethodsList)
+                                                                {
+                                                                    if (SelectedProductShippingMethods?.Any(x => x.ShippingMethodId == shipItm.ShippingMethodId) != null && SelectedProductShippingMethods?.Any(x => x.ShippingMethodId == shipItm.ShippingMethodId) == true)
+                                                                    {
+                                                                        ShippingMethodsList.Add(shipItm);
+                                                                    }
+                                                                }
+                                                            }
+
+
+
+
+                                                            <tr>
+                                                                <td>
+                                                                    <input class="order_item_id" type="hidden" value="@item.OrderItemId" />
+                                                                    <input class="shipping_detail_id" type="hidden" value="@item.ShippingDetailId" />
+
+                                                                    <span class="text-dark"> @item.ShippingDetailId </span>
+                                                                </td>
+                                                                <td>
+                                                                    @{
+                                                                        string ImagePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot" + item.ProductDefaultImage);
+
+                                                                        if (System.IO.File.Exists(ImagePath))
+                                                                        {
+
+                                                                            <a href="@item.ProductDefaultImage" target="_blank">
+                                                                                <img src="@item.ProductDefaultImage" class="" width="100" height="100" alt="">
+                                                                            </a>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <a href="/content/themeContent/global_assets/images/placeholders/placeholder.jpg" target="_blank">
+                                                                                <img src="/content/themeContent/global_assets/images/placeholders/placeholder.jpg" class="" width="100" height="100" alt="">
+                                                                            </a>
+                                                                        }
+                                                                    }
+                                                                </td>
+                                                                <td><span class="text-dark"> @(StringConversionHelper.TruncateAnyStringValue(@item.ProductName, 20, true))   </span></td>
+                                                                <td>
+                                                                    <div class="form-group">
+                                                                        <select class="form-control shipper_id">
+                                                                            @{
+                                                                                if (Model?.ShippersList != null)
+                                                                                {
+                                                                                    foreach (var shpr in Model.ShippersList)
+                                                                                    {
+                                                                                        if (item.ShipperId != null && item.ShipperId == shpr.UserId)
+                                                                                        {
+                                                                                            <option value="@shpr.UserId" selected>@(shpr.FirstName + " " + shpr.LastName)</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <option value="@shpr.UserId">@(shpr.FirstName + " " + shpr.LastName)</option>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        </select>
+                                                                    </div>
+
+                                                                </td>
+                                                                <td>
+
+                                                                    <div class="form-group">
+                                                                        <select class="form-control shipping_method_id">
+
+
+                                                                            @{
+                                                                                if (ShippingMethodsList != null)
+                                                                                {
+                                                                                    foreach (var colShip in ShippingMethodsList)
+                                                                                    {
+                                                                                        if (colShip.ShippingMethodId == item.ShippingMethodId)
+                                                                                        {
+                                                                                            <option value="@colShip.ShippingMethodId" selected>@colShip.MethodName</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <option value="@colShip.ShippingMethodId">@colShip.MethodName</option>
+                                                                                        }
+
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        </select>
+                                                                    </div>
+
+
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-group">
+                                                                        <select class="form-control shipping_status_id">
+                                                                            @{
+                                                                                if (Model?.OrderStatusesList != null)
+                                                                                {
+                                                                                    foreach (var sts in Model.OrderStatusesList)
+                                                                                    {
+                                                                                        if (item.ShippingStatusId != null && item.ShippingStatusId == sts.StatusId)
+                                                                                        {
+                                                                                            <option value="@sts.StatusId" selected>@sts.StatusName</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <option value="@sts.StatusId">@sts.StatusName</option>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        </select>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-group">
+                                                                        <input type="date" value="@(item.DepartureDate!=null ? item.DepartureDate?.ToString("yyyy-MM-dd") : "")" class="departure_date form-control">
+                                                                    </div>
+
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-group">
+                                                                        <input type="date" value="@(item.ReceivedDate!=null ? item.ReceivedDate?.ToString("yyyy-MM-dd") : "")" class="receiver_date form-control">
+                                                                    </div>
+                                                                </td>
+
+                                                                <td>
+                                                                    <div class="form-group">
+                                                                        <input type="text" value="@(item.ReceiverName)" class="form-control receiver_name">
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="form-group">
+                                                                        <input type="text" value="@(item.ReceiverMobile)" class="form-control receiver_mobile">
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+
+                                                                    <div class="form-group">
+                                                                        <input type="text" value="@(item.ReceiverIdentityNo)" class="form-control receiver_identity_no">
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr id="product_attribute_no_data_row">
+                                                            <td class="text-center" colspan="20"><b>  No record found </b></td>
+
+                                                        </tr>
+                                                    }
+                                                }
+
+
+
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+
+
+                        </fieldset>
+                    </div>
+
+                    <div class="tab-pane fade" id="bordered-tab3">
+                        <fieldset class="mb-3">
+
+
+
+                            <div class="row" id="order_note_div">
+
+                                @await Html.PartialAsync("~/Views/Sales/PartialViews/_OrderNoteMain.cshtml", Model)
+
+                            </div>
+
+
+                        </fieldset>
+                    </div>
+                    <div class="tab-pane fade" id="bordered-tab4">
+                        <fieldset class="mb-3">
+
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="table-responsive" id="product_attribute_data_table">
+                                        <table class="table site-table-listing" id="product_attributes_table">
+                                            <thead>
+                                                <tr>
+
+                                                    <th id="lbl_hdr_paymentMethod"> Payment Method Name</th>
+                                                    <th id="lbl_hdr_paymentMileStoneName"> Milestone Name </th>
+                                                    <th id="lbl_hdr_paymentMileStoneValue"> Milestone Value </th>
+                                                    <th id="lbl_hdr_paymentDte"> Payment Date </th>
+
+
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                                @{
+
+                                                    if (Model != null && Model.OrderPaymentsList != null)
+                                                    {
+                                                        foreach (var item in Model.OrderPaymentsList)
+                                                        {
+                                                            <tr>
+                                                                <td>
+                                                                    <span class="text-dark"> @item.PaymentMethodName </span>
+                                                                </td>
+
+                                                                <td>
+                                                                    <span class="text-dark"> @item.MilestoneName </span>
+
+
+                                                                </td>
+
+                                                                <td>
+                                                                    <span class="text-dark"> @(CommonConversionHelper.GetDefaultCurrencySymbol())@item.MilestoneValue </span>
+                                                                </td>
+                                                                <td>
+                                                                    <span class="text-dark"> @item.PaymentDate.ToString("dd MMM, yyyy") </span>
+                                                                </td>
+
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr id="product_attribute_no_data_row">
+                                                            <td class="text-center" colspan="20"><b>  No record found </b></td>
+
+                                                        </tr>
+                                                    }
+                                                }
+
+
+
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </fieldset>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+    </form>
+
+
+
+
+</div>
+
+
+<!-- Invoice modal -->
+<div id="modal_order_invoice" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-full">
+        <div class="modal-content">
+            <div class="modal-header site-bg-modal-header">
+                <h5 class="modal-title" id="lbl_invoice_main_title">Order Invoice</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Invoice template -->
+                <div class="card">
+                    <div class="card-header bg-transparent header-elements-inline">
+                        @*   <h6 class="card-title">Static invoice</h6>*@
+                        <div class="header-elements">
+
+                            <button type="button" class="btn btn-light btn-sm ml-3" onclick="ExportOrderInvoiceAsPdf();"><i class="icon-printer mr-2"></i> <span id="lbl_invoice_print">Print</span> </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="mb-4">
+                                    <img src="~/content/themeContent/global_assets/images/site-white-background.png" class="mb-3 mt-2" alt="" style="width: 120px;">
+                                    @* <ul class="list list-unstyled mb-0">
+                                    <li>2269 Elba Lane</li>
+                                    <li>Paris, France</li>
+                                    <li>888-555-2311</li>
+                                    </ul>*@
+                                </div>
+                            </div>
+
+                            <div class="col-sm-6">
+                                <div class="mb-4">
+                                    <div class="text-sm-right">
+                                        <h4 class="text-primary mb-2 mt-md-2">Invoice "@(Model?.OrderObj?.OrderNumber ?? "")"</h4>
+                                        <ul class="list list-unstyled mb-0">
+                                            <li> <span id="lbl_invoice_date"></span>   Date: <span class="font-weight-semibold">@(Model?.OrderObj?.OrderDateUtc.ToString("dd MMM, yyyy"))</span></li>
+                                            @*  <li>Due date: <span class="font-weight-semibold">May 12, 2015</span></li>*@
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-md-flex flex-md-wrap">
+                            <div class="mb-4 mb-md-2">
+                                <span class="text-muted">Invoice To:</span>
+                                <ul class="list list-unstyled mb-0">
+                                    <li><h5 class="my-2">@(Model?.OrderObj?.CustomerName ?? "")</h5></li>
+
+                                    <li> @(StringConversionHelper.TruncateAnyStringValue(Model?.OrderShippingMasterData?.AddressLineOne ?? "", 45, true)) </li>
+                                    <li>@(Model?.OrderShippingMasterData?.CityName ?? "")</li>
+                                    <li>@(Model?.OrderShippingMasterData?.CountryName ?? "")</li>
+                                    <li>@(Model?.OrderObj?.CustomerMobileNo ?? "")</li>
+                                    <li><a href="#">@(Model?.OrderObj?.CustomerEmailAddress ?? "")</a></li>
+                                </ul>
+                            </div>
+
+                            <div class="mb-2 ml-auto">
+                                <span class="text-muted" id="lbl_invoice_payment_details">Payment Details:</span>
+                                <div class="d-flex flex-wrap wmin-md-400">
+                                    <ul class="list list-unstyled mb-0">
+                                        <li><h5 class="my-2" id="lbl_invoice_total_due">Total Due:</h5></li>
+                                        <li id="lbl_invoice_payment_method">Payment Method:</li>
+                                        @* <li>Country:</li>
+                                        <li>City:</li>
+                                        <li>Address:</li>
+                                        <li>IBAN:</li>
+                                        <li>SWIFT code:</li>*@
+                                    </ul>
+
+                                    <ul class="list list-unstyled text-right mb-0 ml-auto">
+                                        <li><h5 class="font-weight-semibold my-2">$@(Model?.OrderObj?.OrderTotal)</h5></li>
+                                        <li>
+                                            <span class="font-weight-semibold">
+                                                @(Model?.OrderPaymentsList?.FirstOrDefault()?.PaymentMethodName)
+
+                                            </span>
+                                        </li>
+                                        @* <li>United Kingdom</li>
+                                        <li>London E1 8BF</li>
+                                        <li>3 Goodman Street</li>
+                                        <li><span class="font-weight-semibold">KFH37784028476740</span></li>
+                                        <li><span class="font-weight-semibold">BPT4E</span></li>*@
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-lg">
+                            <thead>
+                                <tr>
+                                    <th id="lbl_hdr_invoice_product">Product</th>
+                                    <th id="lbl_hdr_invoice_img">Image</th>
+                                    <th id="lbl_hdr_invoice_price">Price</th>
+                                    <th id="lbl_hdr_invoice_quantity">Quantity</th>
+                                    <th id="lbl_hdr_invoice_total">Item Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                @{
+                                    if (Model != null && Model.OrderItemsList != null)
+                                    {
+                                        foreach (var item in Model.OrderItemsList)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <h6 class="mb-0">@(StringConversionHelper.TruncateAnyStringValue(@item.ProductName, 20, true))</h6>
+
+                                                </td>
+                                                <td>
+                                                    @{
+                                                        string ImagePathInvoice = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot" + item.ProductDefaultImage);
+
+                                                        if (System.IO.File.Exists(ImagePathInvoice))
+                                                        {
+
+                                                            <a href="@item.ProductDefaultImage" target="_blank">
+                                                                <img src="@item.ProductDefaultImage" class="" width="100" height="100" alt="">
+                                                            </a>
+                                                        }
+                                                        else
+                                                        {
+                                                            <a href="/content/themeContent/global_assets/images/placeholders/placeholder.jpg" target="_blank">
+                                                                <img src="/content/themeContent/global_assets/images/placeholders/placeholder.jpg" class="" width="100" height="100" alt="">
+                                                            </a>
+                                                        }
+                                                    }
+                                                </td>
+                                                <td>@(CommonConversionHelper.GetDefaultCurrencySymbol())@item.Price</td>
+                                                <td>@item.Quantity</td>
+                                                <td><span class="font-weight-semibold">@(CommonConversionHelper.GetDefaultCurrencySymbol())@item.OrderItemTotal</span></td>
+                                            </tr>
+
+                                        }
+                                    }
+                                }
+
+
+
+
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="d-md-flex flex-md-wrap">
+                            <div class="pt-2 mb-3">
+                                <h6 class="mb-3" id="lbl_invoice_authorizedperson">Authorized person</h6>
+                                <div class="mb-3">
+                                    <img src="~/content/themeContent/global_assets/images/signature.png" width="150" alt="">
+                                </div>
+
+                                <ul class="list-unstyled text-muted">
+                                    <li>Eugene Kopyov</li>
+                                    <li>2269 Elba Lane</li>
+                                    <li>Paris, France</li>
+                                    <li>888-555-2311</li>
+                                </ul>
+                            </div>
+
+                            <div class="pt-2 mb-3 wmin-md-400 ml-auto">
+                                <h6 class="mb-3" id="lbl_invoice_total_due_two">Total due</h6>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <tbody>
+                                            <tr>
+                                                <th id="lbl_invoice_sub_total">Subtotal:</th>
+                                                <td class="text-right">@(CommonConversionHelper.GetDefaultCurrencySymbol())@Model?.OrderItemsList?.Sum(i=>i.OrderItemTotal)</td>
+                                            </tr>
+                                            <tr>
+                                                <th id="lbl_invoice_extrax">Extras: </th>
+                                                <td class="text-right">@(CommonConversionHelper.GetDefaultCurrencySymbol()) @(Model?.OrderObj?.OrderTotal - Model?.OrderItemsList?.Sum(i => i.OrderItemTotal))</td>
+                                            </tr>
+                                            <tr>
+                                                <th id="lbl_invoice_total">Total:</th>
+                                                <td class="text-right text-primary"><h5 class="font-weight-semibold">@(CommonConversionHelper.GetDefaultCurrencySymbol()) @(Model?.OrderObj?.OrderTotal)</h5></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                @*
+                                <div class="text-right mt-3">
+                                <button type="button" class="btn btn-primary btn-labeled btn-labeled-left"><b><i class="icon-paperplane"></i></b> Send invoice</button>
+                                </div>*@
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <!-- /invoice template -->
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline bg-teal-400 text-teal-400 border-teal-400 border-2" data-dismiss="modal" id="lbl_invoice_close_btn">Close</button>
+                @*  <button type="button" class="btn bg-primary">Save changes</button>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="order_item_variants_area">
+
+</div>
+
+<!-- /Invoice modal -->
+@section  Scripts{
+
+
+
+    <script>
+
+
+
+
+        function SaveOrderItemsShippingDetails() {
+
+
+            let orderShippingDetailsItems = [];
+
+            $('.different-shipping-attributes').children('tr').each(function () {
+                debugger
+
+                let order_item_id = $(this).find(".order_item_id").val();
+                let shipping_detail_id = $(this).find(".shipping_detail_id").val();
+                let shipper_id = $(this).find(".shipper_id").val();
+                let shipping_method_id = $(this).find(".shipping_method_id").val();
+                let shipping_status_id = $(this).find(".shipping_status_id").val();
+                let departure_date = $(this).find(".departure_date").val();
+                let receiver_date = $(this).find(".receiver_date").val();
+                let receiver_name = $(this).find(".receiver_name").val();
+                let receiver_mobile = $(this).find(".receiver_mobile").val();
+                let receiver_identity_no = $(this).find(".receiver_identity_no").val();
+
+
+                if (!checkIfStringIsEmtpy(order_item_id) || !checkIfStringIsEmtpy(shipping_detail_id)) {
+                    event.preventDefault();
+                    showSuccessErrorMsg("error", "Error", "Order item id is missing in a row!");
+                    return false;
+                }
+
+                orderShippingDetailsItems.push({
+                    shipping_detail_id: shipping_detail_id,
+                    order_item_id: order_item_id,
+                    shipper_id: shipper_id,
+                    shipping_method_id: shipping_method_id,
+                    shipping_status_id: shipping_status_id,
+                    departure_date: departure_date,
+                    receiver_date: receiver_date,
+                    receiver_name: receiver_name,
+                    receiver_mobile: receiver_mobile,
+                    receiver_identity_no: receiver_identity_no,
+
+
+                });
+            });
+
+            var OrderShippingDetailItemsJson = orderShippingDetailsItems.length == 0 ? "[]" : JSON.stringify(orderShippingDetailsItems);
+            var fileData = new FormData();
+            fileData.append("OrderId", $('#OrderId').val());
+            fileData.append("OrderShippingDetailItemsJson", OrderShippingDetailItemsJson);
+
+
+            if (!checkIfStringIsEmtpy($('#OrderId').val())) {
+                showSuccessErrorMsg("error", "Error", "Order id is null");
+                return false;
+            }
+
+
+            let saveUrl = "@Url.Action("UpdateOrderShippingItemsDetail", "Sales" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: fileData,
+                success: function (data) {
+
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", data.message);
+
+                        //setTimeout(function() {
+                        //    window.location.href = "@Url.Action("ProductsList","ProductsCatalog" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+                        //}, 1000);
+
+                    }
+                    else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showSuccessErrorMsg("error", "Error", "Something went wrong. Please try again");
+                }
+            });
+        }
+
+        function PrintOrderInvoice() {
+
+            $('#modal_order_invoice').modal('show');
+        }
+
+
+        function ExportOrderInvoiceAsPdf() {
+
+            window.print();
+        }
+
+
+        function showOrterItemVariants(OrderItemId) {
+            // --make form data
+            var formDate = {
+                OrderId: '@ViewBag.OrderId',
+                OrderItemId: OrderItemId,
+
+            }
+
+            let requestUrl = "/Sales/showOrterItemVariants";
+            $.ajax({
+                type: "GET",
+                url: requestUrl,
+                data: formDate,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function (data) {
+
+                    $("#order_item_variants_area").html(data);
+                    $("#modal_order_variants").modal('show');
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+        }
+
+    </script>
+
+    }

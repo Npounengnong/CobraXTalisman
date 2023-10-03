@@ -1,0 +1,277 @@
+﻿@model Entities.MainModels.ConfigurationModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+}
+
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                EntityId = Model?.PageBasicInfoObj != null ? Model.PageBasicInfoObj.EntityId : 0,
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = false,
+                ShowActionsButton = true,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = true,
+                DataExportUrl = Url.Action("SitesLogo", "Configuration", new { langCode = Model?.PageBasicInfoObj?.langCode })
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @* @{
+            SearchFilterModel filter = new SearchFilterModel();
+
+            #region basic settings
+            filter.SearchJSFunctionName = "SearchRecord();";
+            filter.SearchButtonType = "button";
+            filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+            filter.SearchURL = Url.Action("SizeList", "Configuration" , new { langCode = Model?.PageBasicInfoObj?.langCode });
+            #endregion
+
+            filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+            new HtmlFormFieldsEntity(){ FieldID = "SizeId", FieldName="SizeId",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Size Id", LabelText="Size Id", ToolTipText="Enter here the size id", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "Name", FieldName="Name",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Size Name", LabelText="Size Name", ToolTipText="Enter here size name", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "FromDate", FieldName="FromDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="From Date", LabelText="From Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ToDate", FieldName="ToDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="To Date", LabelText="To Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)*@
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/Configuration/PartialViews/_SitesLogo.cshtml", Model)
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+    <!-- Modals area Edit starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityEdit = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityEdit.ModalTitle = "Update Size";
+        htmlBootstrapModalEntityEdit.ModalDivId = "EditDataModal";
+        htmlBootstrapModalEntityEdit.SubmitBtnJsFunctionName = "UpdateFormRecord();";
+        htmlBootstrapModalEntityEdit.SubmitButtonText = "Update";
+        htmlBootstrapModalEntityEdit.FormId = "data-edit-common-form";
+        htmlBootstrapModalEntityEdit.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+        htmlBootstrapModalEntityEdit.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+    new HtmlFormFieldsEntity(){ FieldID = "AppConfigKeyUpdate", FieldName="AppConfigKeyUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Logo Name", LabelText="Logo Name", IsRequired=true , IsReadOnly = true},
+    new HtmlFormFieldsEntity(){ FieldID = "AppConfigValueUpdate", FieldName="AppConfigValueUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Text, PlaceHolderText="Logo Url", LabelText="Logo Url", IsRequired=false , IsReadOnly = true},
+    new HtmlFormFieldsEntity(){ FieldID = "AttachmentUpdate", FieldName="AttachmentUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.File, PlaceHolderText="Select Image File", LabelText="Image", IsRequired=false},
+    new HtmlFormFieldsEntity(){ FieldID = "AppConfigIdUpdate", FieldName="AppConfigIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden},
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityEdit)
+
+    <!-- /Modals area Edit ends here-->
+
+
+
+</div>
+@section  Scripts{
+
+    <script>
+
+
+
+
+        function UpdateFormRecord() {
+            debugger
+            $("#data-edit-common-form").submit(function (e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-edit-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+
+
+            let AppConfigId = $('#AppConfigIdUpdate').val();
+            let AppConfigValue = $('#AppConfigValueUpdate').val();
+            let AppConfigKey = $('#AppConfigKeyUpdate').val();
+            let AttachmentFile = $("#AttachmentUpdate").get(0).files;
+
+            if (!checkIfStringIsEmtpy(AppConfigId)) {
+                showSuccessErrorMsg("error", "Error", "App Config Id is required!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(AppConfigKey)) {
+                showSuccessErrorMsg("error", "Error", "Logo name is required!");
+                return false;
+            }
+
+            let formData = new FormData();
+
+            for (var i = 0; i < AttachmentFile.length; i++) {
+                debugger
+                formData.append("AttachmentFile", AttachmentFile[i]);
+            }
+            formData.append("AppConfigId", AppConfigId);
+            formData.append("AppConfigValue", AppConfigValue);
+            formData.append("AppConfigKey", AppConfigKey);
+            formData.append("DataOperationType", '@((short)DataOperationType.Update)');
+
+
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            let saveUrl = "@Url.Action("UpdateSiteLogo", "Configuration" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: formData,
+
+                success: function (data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Updated Successfully!");
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1000);
+                    } else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            })
+
+        }
+
+        function showEditModal(AppConfigId,
+            AppConfigKey,
+            AppConfigValue
+        ) {
+            debugger
+
+            //--first empty old values
+            $('#AppConfigIdUpdate').val("");
+            $('#AppConfigKeyUpdate').val("");
+            $('#AppConfigValueUpdate').val("");
+
+            $('#AppConfigIdUpdate').val(AppConfigId);
+            $('#AppConfigKeyUpdate').val(AppConfigKey);
+            $('#AppConfigValueUpdate').val(AppConfigValue);
+
+
+            $('#EditDataModal').modal('show');
+
+        }
+
+
+
+
+    </script>
+
+}

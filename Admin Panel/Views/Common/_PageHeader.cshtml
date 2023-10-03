@@ -1,0 +1,166 @@
+﻿@model Entities.CommonModels.PageHeader
+
+@{
+    string DataExportUrl = Model != null && !String.IsNullOrWhiteSpace(Model.DataExportUrl) ? Model.DataExportUrl : "/";
+    int EntityId = Model!=null ? Model.EntityId : 0;
+
+    List<RoleRightEntity>? UserRolesRights = sessionManager != null ? await sessionManager.GetUserRoleRightsFromSession() : new List<RoleRightEntity>();
+    bool hasAddRecordRight = UserRolesRights != null && UserRolesRights.Count > 0 && UserRolesRights.Any(x => x.EntityId == EntityId && x.RightId == (short)UserRightsEnum.Add) ? true : false;
+}
+
+<div class="page-header">
+    <div class="page-header-content header-elements-md-inline">
+        <div class="page-title d-flex">
+            <h4><i class="icon-paragraph-left3 mr-2"></i>  <span class="font-weight-semibold" id="lbl_page_main_header">@Model?.PageTitle</span></h4>
+            <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
+        </div>
+
+        <div class="header-elements d-none text-center text-md-left mb-3 mb-md-0">
+
+
+
+            @if (Model?.HtmlTagsList?.Count() > 0)
+            {
+                foreach (var extraButtons in Model.HtmlTagsList)
+                {
+                    string label_extra_btn = "lbl_" + extraButtons.FieldID;
+                    <div class="btn-group ml-1">
+                        <button type="button" class="@extraButtons.HtmlClass" onclick="@extraButtons.FieldOnClickFunction">
+                            @if (!String.IsNullOrWhiteSpace(extraButtons.IconClass))
+                            {
+                                <b>
+                                    <i class="@extraButtons.IconClass"></i>
+                                </b>
+                            }
+                            <span id="@label_extra_btn">
+                                @extraButtons.LabelText
+                            </span>
+                            
+                        </button>
+                    </div>
+                }
+
+            }
+
+
+            @if (Model.ShowGoBackButton)
+            {
+                <div class="btn-group ml-1">
+                    <a href="#" onclick="history.go(-1)" class="btn bg-brown btn-labeled btn-labeled-left">
+                        <b>
+
+                            <i class="icon-arrow-left7"></i>
+
+                        </b> <span id="lbl_header_goback_btn"> Go Back</span>
+                    </a>
+                </div>
+
+            }
+
+
+
+            @if (Model.ShowAddNewButton && hasAddRecordRight==true)
+            {
+                if (Model.AddNewButtonType == "OpenModal")
+                {
+                    <div class="btn-group ml-1">
+                        <button type="button" class="btn btn-primary btn-labeled btn-labeled-left" data-toggle="modal" data-target="#AddNewDataModal"><b><i class="icon-plus3"></i></b><span id="lbl_header_add_new_btn">Add New</span> </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="btn-group ml-1">
+                        <a href="@Model.AddNewButtonNewLinkUrl" class="btn btn-primary btn-labeled btn-labeled-left"><b><i class="icon-plus3"></i></b><span id="lbl_header_add_new_btn"> Add New</span></a>
+                    </div>
+                }
+
+            }
+
+            @if (Model.ShowActionsButton)
+            {
+                <div class="btn-group ml-1">
+                    <button type="button" class="btn bg-teal-400"><i class="icon-stack2 mr-2"></i> <span id="lbl_header_action_btn">Actions</span> </button>
+                    <button type="button" class="btn bg-teal-400 dropdown-toggle" data-toggle="dropdown"></button>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        @* <div class="dropdown-header">Actions</div>
+                    <a href="#" class="dropdown-item"><i class="icon-file-eye"></i> View reports</a>
+                    <a href="#" class="dropdown-item"><i class="icon-file-plus"></i> Edit reports</a>
+                    <a href="#" class="dropdown-item"><i class="icon-file-stats"></i> Statistics</a>*@
+                        <div class="dropdown-header">Export</div>
+                        @if (Model.ShowExportToPdfButton)
+                        {
+                            <a href="#" class="dropdown-item"><i class="icon-file-pdf"></i> Export to PDF</a>
+                        }
+
+                        @if (Model.ShowExportToExcelButton)
+                        {
+                            <a href="#" onclick="ExportToExcel();" class="dropdown-item"><i class="icon-file-excel"></i> Export to excel</a>
+                        }
+
+                        @if (Model.ShowPrintInvoiceButton)
+                        {
+                            <a href="#" onclick="PrintOrderInvoice();" class="dropdown-item"><i class="icon-file-excel"></i> Inoice (PDF)</a>
+                        }
+
+                    </div>
+                </div>
+            }
+
+
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function ExportToExcel() {
+        debugger
+        let excelFormData = [];
+
+        $.each($('#searchform :input').not(".date-filter-exclude").serializeArray(), function(i, field) { //--exclue fields with class name "date-filter-exclude" bcz we are setting it manually
+
+            excelFormData.push({
+                fieldName: $.trim(field.name),
+                fieldValue: $.trim(field.value)
+            });
+        })
+
+
+        if ($('#FromDate').length > 0 && checkIfStringIsEmtpy($('#FromDate').val())) {
+            excelFormData.push({
+                fieldName: "FromDate",
+                fieldValue: formatDateToSQLFormat($('#FromDate').val())
+            });
+        }
+
+        if ($('#ToDate').length > 0 && checkIfStringIsEmtpy($('#ToDate').val())) {
+            excelFormData.push({
+                fieldName: "ToDate",
+                fieldValue: formatDateToSQLFormat($('#ToDate').val())
+            });
+        }
+
+        //--Add current page in array
+        excelFormData.push({
+            fieldName: "PageNo",
+            fieldValue: $('#CurrentPage').val()
+        });
+
+
+
+        var SubURL = '?DataExportType=1'
+
+        if (excelFormData != undefined && excelFormData != null && excelFormData.length > 0) {
+            for (let i = 0; i < excelFormData.length; i++) {
+                SubURL = SubURL + '&' + excelFormData[i].fieldName + '=' + excelFormData[i].fieldValue;
+            }
+        }
+
+        var FullUrl = '@DataExportUrl' + SubURL;
+
+        window.location.href = FullUrl;
+
+    }
+
+</script>

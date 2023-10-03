@@ -1,0 +1,248 @@
+﻿@model Entities.CommonModels.SearchFilterModel
+
+@{
+    string searchFunction = Model != null && !String.IsNullOrWhiteSpace(Model.SearchJSFunctionName) ? Model.SearchJSFunctionName : "return false;";
+    string SearchButtonType = Model != null && !String.IsNullOrWhiteSpace(Model.SearchButtonType) ? Model.SearchButtonType : "button";
+    string SearchURL = Model != null && !String.IsNullOrWhiteSpace(Model.SearchURL) ? Model.SearchURL : "/";
+
+    string languageCode = await sessionManager.GetLanguageCodeFromSession();
+}
+
+
+<form id="searchform" onsubmit="@searchFunction  return false;">
+    <div class="row">
+
+
+        @{
+
+            if (Model != null && Model.SearchFilterEntityList != null && Model.SearchFilterEntityList.Count > 0)
+            {
+                foreach (var field in Model.SearchFilterEntityList)
+                {
+                    string IsFieldRequired = field.IsRequired ? "required" : "";
+                    string FieldReadOnly = field.IsReadOnly ? "readonly" : "";
+                    field.LabelID = "lbl_" + field.FieldID;
+
+                    if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Search)
+                    {
+                        <div class="col-lg-3 col-md-3">
+                            <div class="form-group">
+                                <label id="@field.LabelID">
+                                    @field.LabelText:
+
+
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="@field.ToolTipText"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <input type="search" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" data_label_text="@field.LabelText" @IsFieldRequired @FieldReadOnly>
+                            </div>
+                        </div>
+
+                    }
+                    else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Date)
+                    {
+
+                        <div class="col-lg-3 col-md-3">
+                            <div class="form-group">
+                                <label id="@field.LabelID">@field.LabelText: <span data-popup="tooltip" title="" data-placement="right" data-original-title="@field.ToolTipText"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span></label>
+                                <div class="input-group">
+                                    <span class="input-group-prepend">
+                                        <span class="input-group-text"><i class="icon-calendar22 mr-2"></i></span>
+                                    </span>
+                                    <input type="text" class="form-control date-filter-exclude pickadate" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText &hellip;" data_label_text="@field.LabelText" @IsFieldRequired>
+                                </div>
+                            </div>
+                        </div>
+
+                    }
+                    else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Text)
+                    {
+                        <div class="col-lg-3 col-md-3">
+                            <div class="form-group">
+                                <label id="@field.LabelID">@field.LabelText: <span data-popup="tooltip" title="" data-placement="right" data-original-title="@field.ToolTipText"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span></label>
+                                <input type="text" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" data_label_text="@field.LabelText" @IsFieldRequired @FieldReadOnly>
+                            </div>
+                        </div>
+
+                    }
+                    else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Number)
+                    {
+                        <div class="col-lg-3 col-md-3">
+                            <div class="form-group">
+                                <label id="@field.LabelID">@field.LabelText: <span data-popup="tooltip" title="" data-placement="right" data-original-title="@field.ToolTipText"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span></label>
+                                <input type="number" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" data_label_text="@field.LabelText" @IsFieldRequired @FieldReadOnly>
+                            </div>
+                        </div>
+
+                    }
+                    else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Dropdown)
+                    {
+
+
+                        <div class="col-lg-3 col-md-3">
+                            <div class="form-group">
+                                <label id="@field.LabelID">
+                                    @field.LabelText:
+
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="@field.ToolTipText">
+                                        <i class="icon-question4 ml-1 form-tooltip-color"></i>
+                                    </span>
+                                </label>
+                                <select class="form-control select-search" id="@field.FieldID" name="@field.FieldName" onchange="@field.FieldOnChangeFunction" data_label_text="@field.LabelText" @IsFieldRequired>
+                                    <option value="">@field.PlaceHolderText</option>
+                                    @{
+                                        if (field.DropdownData != null && field.DropdownData.Count > 0)
+                                        {
+                                            foreach (var itm in field.DropdownData)
+                                            {
+                                                <option value="@itm.Key">@itm.Value</option>
+                                            }
+                                        }
+                                    }
+
+                                </select>
+                            </div>
+                        </div>
+
+
+
+                    }
+                    else if (field.FieldTypeID == (short)HTMLFieldTypeEnums.Hidden)
+                    {
+
+                        <input type="hidden" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText">
+
+                    }
+                    else
+                    {
+                        <div class="col-lg-3 col-md-3">
+                            <div class="form-group">
+                                <label id="@field.LabelID">@field.LabelText: <span data-popup="tooltip" title="" data-placement="right" data-original-title="@field.ToolTipText"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span></label>
+                                <input type="text" class="form-control" id="@field.FieldID" name="@field.FieldName" value="@field.DefaultValue" placeholder="@field.PlaceHolderText" data_label_text="@field.LabelText" @IsFieldRequired @FieldReadOnly>
+                            </div>
+                        </div>
+                    }
+                }
+
+                <div class="col-lg-12">
+                    <div class="d-flex justify-content-end align-items-center">
+                        <button type="button" onclick="resetSearchForm()" class="btn btn-light" id="lbl_srch_form_rst_btn">Reset</button>
+                        <button type="@SearchButtonType" onclick="@searchFunction" class="btn bg-blue ml-3"> <span id="lbl_srch_form_srch_btn">Search</span>  <i class="icon-paperplane ml-2"></i></button>
+                    </div>
+                </div>
+            }
+
+
+
+        }
+
+
+    </div>
+</form>
+
+
+<script>
+
+
+    function SearchRecord() {
+
+        let searchFormData = {};
+        let requiredFields = [];
+
+        //--check required fields in form
+        $.each($('#searchform :input').serializeArray(), function(i, field) { //--exclue fields with class name "date-filter-exclude" bcz we are setting it manually
+
+            let fieldName = $.trim(field.name);
+            let fieldValue = $.trim(field.value);
+
+            let fieldAccessPath = '#searchform [name="' + fieldName + '"]';
+            // let mm =  $('#searchform [name="RoleId"]');
+            let fieldInfo = $(fieldAccessPath);
+            let IsRequired = $(fieldInfo).prop('required')
+            if (IsRequired != undefined && IsRequired != null && IsRequired == true && !checkIfStringIsEmtpy(fieldValue)) {
+                let data_label_text = $(fieldInfo).attr("data_label_text");
+                requiredFields.push({
+                    fieldName: data_label_text,
+                    isRequired: true
+                });
+            }
+        })
+
+        if (requiredFields != undefined && requiredFields.length > 0) {
+            event.preventDefault();
+
+            for (let i = 0; i < requiredFields.length; i++) {
+
+                showSuccessErrorMsg('error', 'Error', requiredFields[i].fieldName + " is required");
+            }
+            return false;
+
+        }
+
+
+        $.each($('#searchform :input').not(".date-filter-exclude").serializeArray(), function(i, field) { //--exclue fields with class name "date-filter-exclude" bcz we are setting it manually
+            let fieldName = $.trim(field.name);
+            let fieldValue = $.trim(field.value);
+            searchFormData[fieldName] = fieldValue;
+        })
+
+
+        if ($('#FromDate').length > 0 && checkIfStringIsEmtpy($('#FromDate').val())) {
+            let FromDateOriginalValue = $('#FromDate').val();
+            let FromDate = formatDateToSQLFormat(FromDateOriginalValue);
+            searchFormData["FromDate"] = FromDate;
+        }
+
+        if ($('#ToDate').length > 0 && checkIfStringIsEmtpy($('#ToDate').val())) {
+            let ToDateOriginalValue = $('#ToDate').val();
+            let ToDate = formatDateToSQLFormat(ToDateOriginalValue);
+            searchFormData["ToDate"] = ToDate;
+        }
+
+        var Url = '@SearchURL';
+
+        // ✅ Show loader area starts here
+        showHideSiteMainLoader(true);
+        // ✅ Show loader area ends here
+
+        $.ajax({
+            type: "GET",
+            url: Url,
+
+            data: searchFormData,
+            // datatype: "json",
+            cache: false,
+            async: false,
+
+            success: function(data) {
+                $('#main_data_table').html(data);
+
+
+                // ✅ Stop loader area starts here
+                let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                setTimeout(function() {
+                    showHideSiteMainLoader(false);
+                }, LoaderTimeDuration ?? 2000);
+                // ✅ Stop loader area ends here
+
+
+                let languageCode = "@languageCode";
+                let EntityId = @(Model?.EntityId ?? 0);
+                GetLocalizationControlsJsonDataForScreen(EntityId, languageCode, "main_data_table");
+
+
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+
+                // ✅ Stop loader area starts here
+                let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                setTimeout(function() {
+                    showHideSiteMainLoader(false);
+                }, LoaderTimeDuration ?? 2000);
+                // ✅ Stop loader area ends here
+            }
+        })
+    }
+
+
+</script>

@@ -1,0 +1,182 @@
+﻿@{
+    ViewData["Title"] = "Demo";
+    Layout = null;
+
+    string AdminPanelUrl = ConstantsHelper.GetAppSettingKeyValue("AppSetting", "AdminPanelBaseUrl");
+    string WebsiteUrl = ConstantsHelper.GetAppSettingKeyValue("AppSetting", "WebsiteBaseURL");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Demo | Website</title>
+
+
+    <!-- Global stylesheets -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,900" rel="stylesheet" type="text/css">
+    <link href="~/content/themeContent/global_assets/css/icons/icomoon/styles.min.css" rel="stylesheet" />
+    <link href="~/content/themeContent/assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/content/themeContent/assets/css/bootstrap_limitless.min.css" rel="stylesheet" />
+    <link href="~/content/themeContent/assets/css/layout.min.css" rel="stylesheet" />
+    <link href="~/content/themeContent/assets/css/components.min.css" rel="stylesheet" />
+    <link href="~/content/themeContent/assets/css/colors.min.css" rel="stylesheet" />
+    <link href="~/content/themeContent/global_assets/css/icons/fontawesome/styles.min.css" rel="stylesheet" />
+    <!-- /global stylesheets -->
+    <!-- Core JS files -->
+    <script src="~/content/themeContent/global_assets/js/main/jquery.min.js"></script>
+    <script src="~/content/themeContent/global_assets/js/main/bootstrap.bundle.min.js"></script>
+    <script src="~/content/themeContent/global_assets/js/plugins/loaders/blockui.min.js"></script>
+    <!-- /core JS files -->
+    <!-- Theme JS files starts here -->
+    <script src="~/content/themeContent/global_assets/js/plugins/forms/styling/switchery.min.js"></script>
+    <script src="~/content/themeContent/global_assets/js/plugins/ui/prism.min.js"></script>
+    <script src="~/content/themeContent/assets/js/app.js"></script>
+    <script src="~/content/themeContent/global_assets/js/demo_pages/navbar_multiple.js"></script>
+    <script src="~/content/themeContent/global_assets/js/plugins/ui/moment/moment.min.js"></script>
+
+    <!--Date time related script-->
+    <script src="~/content/themeContent/global_assets/js/plugins/pickers/daterangepicker.js"></script>
+    <script src="~/content/themeContent/global_assets/js/plugins/pickers/anytime.min.js"></script>
+    <script src="~/content/themeContent/global_assets/js/plugins/pickers/pickadate/picker.js"></script>
+    <script src="~/content/themeContent/global_assets/js/plugins/pickers/pickadate/picker.date.js"></script>
+    <script src="~/content/themeContent/global_assets/js/plugins/pickers/pickadate/picker.time.js"></script>
+    <script src="~/content/themeContent/global_assets/js/plugins/pickers/pickadate/legacy.js"></script>
+    <script src="~/content/themeContent/global_assets/js/plugins/notifications/jgrowl.min.js"></script>
+    <script src="~/content/themeContent/global_assets/js/demo_pages/picker_date.js"></script>
+
+    <!--Notifications script-->
+    <script src="~/content/themeContent/global_assets/js/plugins/notifications/pnotify.min.js"></script>
+    <script src="~/content/themeContent/global_assets/js/demo_pages/extra_pnotify.js"></script>
+
+
+    <!--Custom Own CSS-->
+    <link href="~/css/site.css" rel="stylesheet" />
+    <!--/Custom Own CSS-->
+
+    <script src="~/content/themeContent/global_assets/js/demo_pages/user_pages_profile.js"></script>
+
+</head>
+
+<body>
+
+
+
+    <!-- Page content -->
+    <div class="page-content">
+
+
+
+        <!-- Main content -->
+        <div class="content-wrapper">
+
+
+            <!-- Content area -->
+            <div class="content">
+
+                <!-- Inner container -->
+                <div class="d-flex align-items-start flex-column flex-md-row">
+
+                    <!-- Left content -->
+                    <div class="tab-content w-100 order-2 order-md-1">
+                        <div class="tab-pane fade active show" id="activity">
+
+                        
+                            <!-- Invoices -->
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="card border-left-3 border-left-danger rounded-left-0">
+
+                                        <div class="card-header header-elements-sm-inline">
+                                            <h6 class="card-title">Admin Panel</h6>
+
+                                        </div>
+
+
+                                        <div class="card-body">
+                                            <div class="card-img-actions mb-3">
+                                                <img class="card-img img-fluid" src="~/content/themeContent/global_assets/images/placeholders/Admin_Dashboard.jpg" alt="" style="width:100%; height: 350px; border: 1px solid #c5e7f1;">
+                                                <div class="card-img-actions-overlay card-img">
+                                                    <a href="@AdminPanelUrl" target="_blank" class="btn btn-outline bg-white text-white border-white border-2 btn-icon rounded-round">
+                                                        <i class="icon-link"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="card-footer d-sm-flex justify-content-sm-between align-items-sm-center">
+                                            <a href="@AdminPanelUrl" class="btn btn-danger" target="_blank"><i class="icon-feed mr-2"></i> View Demo</a>
+                                 
+                                         
+                                        </div>
+
+
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <div class="card border-left-3 border-left-success rounded-left-0">
+
+                                        <div class="card-header header-elements-sm-inline">
+                                            <h6 class="card-title">Website </h6>
+
+                                        </div>
+
+
+                                        <div class="card-body">
+                                            <div class="card-img-actions mb-3">
+                                                <img class="card-img img-fluid" src="~/content/themeContent/global_assets/images/placeholders/Customer_Dashboard.jpg" alt="" style="width:100%; height: 350px;border: 1px solid #c9c96d;">
+                                                <div class="card-img-actions-overlay card-img">
+                                                    <a href="@WebsiteUrl" target="_blank" class="btn btn-outline bg-white text-white border-white border-2 btn-icon rounded-round">
+                                                        <i class="icon-link"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+
+                                      
+                                        </div>
+
+                                        <div class="card-footer d-sm-flex justify-content-sm-between align-items-sm-center">
+                                      
+                                         <a href="@WebsiteUrl" class="btn btn-success" target="_blank"><i class="icon-feed mr-2"></i> View Demo</a>
+                                 
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /invoices -->
+
+
+
+                        </div>
+
+                    
+                    </div>
+                    <!-- /left content -->
+
+
+
+                </div>
+                <!-- /inner container -->
+
+            </div>
+            <!-- /content area -->
+         
+
+        </div>
+        <!-- /main content -->
+
+    </div>
+    <!-- /page content -->
+    <!--Common Hidden Fields -->
+    <partial name="~/Views/Common/_HiddenHtmlFields.cshtml" />
+    <!-- /Hidden Fields -->
+    <!--site js -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+</body>
+</html>

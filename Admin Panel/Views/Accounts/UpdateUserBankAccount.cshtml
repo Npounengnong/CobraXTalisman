@@ -1,0 +1,828 @@
+﻿@model Entities.MainModels.AccountsModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+
+    #endregion
+}
+
+
+<!--Page specific java script-->
+<script src="~/content/themeContent/global_assets/js/demo_pages/form_checkboxes_radios.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/plugins/purify.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/plugins/sortable.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/plugins/uploaders/fileinput/fileinput.min.js"></script>
+<script src="~/content/themeContent/global_assets/js/demo_pages/uploader_bootstrap.js"></script>
+<!--/Page specific java script-->
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = false,
+                ShowActionsButton = false,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = false,
+                ShowGoBackButton = true,
+
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+
+    <form class="form-validate-jquery" id="data-insert-form" action="#">
+
+
+        <div class="card border-left-3 border-left-slate">
+            <div class="card-header header-elements-inline">
+                <h6 class="card-title" id="lbl_account_page_sub_title">@(Model?.PageBasicInfoObj?.PageTitle ?? "Page Info")</h6>
+                <div class="header-elements">
+                    <div class="list-icons">
+                        <a class="list-icons-item" data-action="collapse"></a>
+                        @*  <a class="list-icons-item" data-action="reload"></a>
+                        <a class="list-icons-item" data-action="remove"></a>*@
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <ul class="nav nav-tabs nav-tabs-highlight mb-0">
+                    <li class="nav-item"><a href="#bordered-tab1" class="nav-link active" data-toggle="tab"><i class="icon-user mr-2"></i><span id="lbl_bank_ac_info_tab">Bank Account Info</span></a></li>
+                    <li class="nav-item"><a href="#bordered-tab5" class="nav-link" data-toggle="tab"><i class="icon-file-picture mr-2"></i><span id="lbl_attachments_tab">Attachments</span> </a></li>
+
+
+                </ul>
+
+                <div class="tab-content card card-body border-top-0 rounded-top-0 mb-0">
+                    <div class="tab-pane fade show active" id="bordered-tab1">
+                        <fieldset class="mb-3">
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+                                    <span id="lbl_account_old_userId">User Id</span>
+
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="number" name="UserId" id="UserId" class="form-control" placeholder="" value="@Model?.BankAccountEntityObj?.UserId" readonly required>
+                                    <input type="hidden" name="BankAccountId" id="BankAccountId" class="form-control" placeholder="" value="@Model?.BankAccountEntityObj?.BankAccountId" required>
+
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_firstName"> First Name</span>
+
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="FirstName" id="FirstName" class="form-control" value="@Model?.BankAccountEntityObj?.FirstName" placeholder="" readonly>
+
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_lastName"> Last Name</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="LastName" id="LastName" class="form-control" value="@Model?.BankAccountEntityObj?.LastName" placeholder="" readonly>
+                                </div>
+                            </div>
+
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_emailAddress">  Email Address</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="email" name="EmailAddress" id="EmailAddress" class="form-control" value="@Model?.BankAccountEntityObj?.EmailAddress" placeholder="" readonly>
+                                </div>
+                            </div>
+
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_userType"> User Type</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="UserTypeName" id="UserTypeName" class="form-control" value="@Model?.BankAccountEntityObj?.UserTypeName" placeholder="" readonly>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+
+                                    <span id="lbl_account_old_accountType"> Account Type</span>
+                                    <span class="text-danger">*</span>
+
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="AccountTypeId" name="AccountTypeId" data-placeholder="Select a Account Type..." class="form-control" required>
+                                        <option value="">Select a Account Type...</option>
+
+                                        @{
+                                            if (Model != null && Model.BankAccountTypesList != null && Model.BankAccountTypesList.Count > 0)
+                                            {
+                                                foreach (var item in Model.BankAccountTypesList)
+                                                {
+                                                    if (item.AccountTypeId == Model?.BankAccountEntityObj?.AccountTypeId)
+                                                    {
+                                                        <option value="@item.AccountTypeId" selected>@item.AccountTypeName</option>
+                                                    }
+                                                    else
+                                                    {
+
+                                                        <option value="@item.AccountTypeId">@item.AccountTypeName</option>
+                                                    }
+
+                                                }
+                                            }
+                                        }
+
+                                    </select>
+                                </div>
+
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_bankBranchName"> Bank Branch Name</span>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="BankBranchName" id="BankBranchName" class="form-control" value="@Model?.BankAccountEntityObj?.BankBranchName" placeholder="" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_bankBranchCode"> Bank Branch Code</span>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="number" name="BankBranchCode" id="BankBranchCode" class="form-control" value="@Model?.BankAccountEntityObj?.BankBranchCode" placeholder="" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_accountNo">  Account No</span>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="AccountNo" id="AccountNo" class="form-control" value="@Model?.BankAccountEntityObj?.AccountNo" placeholder="" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_iban"> IBAN</span>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="Iban" id="Iban" class="form-control" value="@Model?.BankAccountEntityObj?.Iban" placeholder="" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_accountTitle">  Acount Title</span>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="AcountTitle" id="AcountTitle" class="form-control" value="@Model?.BankAccountEntityObj?.AcountTitle" placeholder="" required>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_description"> Description</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="Description" id="Description" class="form-control" value="@Model?.BankAccountEntityObj?.Description" placeholder="">
+                                </div>
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_bankName"> Bank Name</span>
+                                    <span class="text-danger">*</span>
+
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="BankMasterId" name="BankMasterId" onchange="GetStateProvinceByCountryId();" data-placeholder="Select a Bank Name..." class="form-control" required>
+                                        <option value="">Select a Bank Name...</option>
+
+                                        @{
+                                            if (Model != null && Model.BankMasterList != null && Model.BankMasterList.Count > 0)
+                                            {
+                                                foreach (var item in Model.BankMasterList)
+                                                {
+                                                    if (item.BankMasterId == Model?.BankAccountEntityObj?.BankMasterId)
+                                                    {
+                                                        <option data_country_id="@item.CountryId" value="@item.BankMasterId" selected>@item.BankName</option>
+                                                    }
+                                                    else
+                                                    {
+
+                                                        <option data_country_id="@item.CountryId" value="@item.BankMasterId">@item.BankName</option>
+                                                    }
+
+                                                }
+                                            }
+                                        }
+
+                                    </select>
+                                </div>
+
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_state"> State/Province</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="StateProvinceId" name="StateProvinceId" onchange="GetCityByStateId();" data-placeholder="Select a State..." class="form-control">
+                                        <option value="">Select a State...</option>
+
+                                        @{
+                                            if (Model?.BankAccountEntityObj?.StateProvinceId != null && Model.BankAccountEntityObj.StateProvinceId > 0)
+                                            {
+                                                <option value="@(Model.BankAccountEntityObj.StateProvinceId)" selected>@Model.BankAccountEntityObj.StateName</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="-999" selected>Other</option>
+                                            }
+                                        }
+
+                                    </select>
+                                </div>
+
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_city"> City</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <select id="CityId" name="CityId" data-placeholder="Select a City..." class="form-control">
+                                        <option value="">Select a City...</option>
+
+                                        @{
+                                            if (Model?.BankAccountEntityObj?.CityId != null && Model.BankAccountEntityObj.CityId > 0)
+                                            {
+                                                <option value="@(Model.BankAccountEntityObj.CityId)" selected>@Model.BankAccountEntityObj.CityName</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="-999" selected>Other</option>
+                                            }
+                                        }
+
+                                    </select>
+                                </div>
+
+                            </div>
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_branchAddress"> Branch Address</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="BranchAddress" id="BranchAddress" class="form-control" value="@Model?.BankAccountEntityObj?.BranchAddress" placeholder="" required>
+                                </div>
+                            </div>
+
+
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_isActive">Is Active</span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input type="checkbox" id="IsActive" name="IsActive" class="form-check-input-styled-info" @(Model!=null && Model.BankAccountEntityObj!=null && Model.BankAccountEntityObj.IsActive==true ? "checked" : "") data-fouc>
+
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+
+                        </fieldset>
+                    </div>
+
+
+
+
+
+                    <div class="tab-pane fade" id="bordered-tab5">
+                        <fieldset class="mb-3">
+
+
+                            <div class="form-group row">
+                                <label class="col-form-label col-lg-3">
+
+                                    <span id="lbl_account_old_attachmentTypes"> Attachments (.png, jpeg, gif etc)</span>
+                                    <span class="text-danger">*</span>
+                                    <span data-popup="tooltip" title="" data-placement="right" data-original-title="Select any category from the dropdown"><i class="icon-question4 ml-1 form-tooltip-color"></i> </span>
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="file" id="BankAttachementFile" name="BankAttachementFile" class="file-input" multiple="multiple" data-show-upload="false" data-show-caption="true" data-show-preview="true" data-fouc>
+                                </div>
+                            </div>
+
+                            <div class=" row">
+                                <div class="col-lg-12">
+                                    <div class="table-responsive">
+                                        <table class="table site-table-listing" id="product_images_table">
+                                            <thead>
+                                                <tr>
+                                                    <th id="lbl_hdr_imgName"> Image Name</th>
+
+                                                    <th class="text-center" style="width: 20px;"><i class="icon-arrow-down12"></i></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+
+                                                    if (Model?.BankAccountAttachmentEntityList != null && Model.BankAccountAttachmentEntityList.Count > 0)
+                                                    {
+                                                        foreach (var item in Model.BankAccountAttachmentEntityList)
+                                                        {
+
+                                                            <tr>
+
+                                                                <td>
+
+                                                                    @{
+                                                                        string ImagePath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot" + item.AttachmentURL);
+
+                                                                        if (System.IO.File.Exists(ImagePath))
+                                                                        {
+
+                                                                            <a href="@item.AttachmentURL" target="_blank">
+                                                                                <img src="@item.AttachmentURL" class="" width="100" height="100" alt="">
+                                                                            </a>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <a href="/content/themeContent/global_assets/images/placeholders/placeholder.jpg" target="_blank">
+                                                                                <img src="/content/themeContent/global_assets/images/placeholders/placeholder.jpg" class="" width="100" height="100" alt="">
+                                                                            </a>
+                                                                        }
+                                                                    }
+
+
+
+
+                                                                </td>
+
+
+                                                                <td>
+                                                                    <div class="">
+                                                                        <a href="#!" class="dropdown-item text-pink-600" onclick="DeleteUserBankAccountAttachment(this ,'@item.BankAccountAttachId', '@item.AttachmentURL');">
+                                                                            <i class="icon-trash"></i> Delete
+                                                                        </a>
+                                                                    </div>
+                                                                </td>
+
+                                                            </tr>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <tr id="product_attribute_no_data_row">
+                                                            <td class="text-center" colspan="20"><b>  No record found </b></td>
+
+                                                        </tr>
+                                                    }
+                                                }
+
+
+
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+
+                        </fieldset>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="row">
+            <div class="col-lg-12">
+
+                <div class="d-flex justify-content-end align-items-center">
+                    <button type="reset" onclick="resetAnyFormById('data-insert-form');" class="btn btn-light" id="reset"><span id="lbl_account_old_reset_btn">Reset</span>  <i class="icon-reload-alt ml-2"></i></button>
+                    <button type="submit" onclick="UpdateFormRecord();" class="btn btn-primary ml-3"> <span id="lbl_account_old_update_btn">Update</span>  <i class="icon-paperplane ml-2"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+
+
+
+
+</div>
+@section  Scripts{
+
+
+
+    <script>
+
+
+        function UpdateFormRecord() {
+
+
+            // ✅ On formt submit,fire event prevent
+            $("#data-insert-form").submit(function (e) {
+                e.preventDefault();
+            });
+
+            // ✅ Check if form is valid
+            if (!$("#data-insert-form").valid()) {
+                event.preventDefault();
+                showSuccessErrorMsg("error", "Error", "Please fill all required fields!");
+                return false;
+            }
+
+            // ✅ Check the validation of form in a new additional way
+            if (!validateInsertForm("data-insert-form")) {
+                event.preventDefault();
+                showSuccessErrorMsg("error", "Error", "Please fill all required fields!");
+                return false;
+            }
+
+
+            //-- #region All fields values getting area starts here
+            let BankAccountId = $("#BankAccountId").val();
+            let UserId = $("#UserId").val();
+            let AccountTypeId = $("#AccountTypeId").val();
+            let BankBranchName = $("#BankBranchName").val();
+            let BankBranchCode = $("#BankBranchCode").val();
+            let AccountNo = $("#AccountNo").val();
+            let Iban = $("#Iban").val();
+            let AcountTitle = $("#AcountTitle").val();
+            let Description = $("#Description").val();
+            let BankMasterId = $("#BankMasterId").val();
+            let StateProvinceId = $("#StateProvinceId").val();
+            let CityId = $("#CityId").val();
+            let BranchAddress = $("#BranchAddress").val();
+            let IsActive = ($('#IsActive').is(":checked") == true) ? true : false;
+
+
+            var BankAttachementFiles = $("#BankAttachementFile").get(0).files;
+
+
+            if (!checkIfStringIsEmtpy(BankAccountId)) {
+                showSuccessErrorMsg("error", "Error", "Bank Account Id is null");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(UserId)) {
+                showSuccessErrorMsg("error", "Error", "User Id is null");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(AccountTypeId)) {
+                showSuccessErrorMsg("error", "Error", "Account type is null");
+                return false;
+            }
+            if (!checkIfStringIsEmtpy(BankBranchName)) {
+                showSuccessErrorMsg("error", "Error", "Bank Branch Name is null");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(AccountNo)) {
+                showSuccessErrorMsg("error", "Error", "Account No is null");
+                return false;
+            }
+
+
+            //-- #region Form initialization area starts here
+            var fileData = new FormData();
+
+            for (var i = 0; i < BankAttachementFiles.length; i++) {
+                fileData.append("BankAttachementFiles", BankAttachementFiles[i]);
+            }
+            fileData.append("BankAccountId", BankAccountId);
+            fileData.append("UserId", UserId);
+            fileData.append("AccountTypeId", AccountTypeId);
+            fileData.append("BankBranchName", BankBranchName);
+            fileData.append("BankBranchCode", BankBranchCode);
+            fileData.append("AccountNo", AccountNo);
+            fileData.append("Iban", Iban);
+            fileData.append("AcountTitle", AcountTitle);
+            fileData.append("Description", Description);
+            fileData.append("BankMasterId", BankMasterId);
+            fileData.append("StateProvinceId", StateProvinceId);
+            fileData.append("CityId", CityId);
+            fileData.append("BranchAddress", BranchAddress);
+            fileData.append("IsActive", IsActive);
+
+            //-- #endRegion Form initialization area ends here
+
+
+
+            let saveUrl = "@Url.Action("UpdateUserBankAccount", "Accounts", new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+
+            // ✅ Show loader area starts here
+            showHideSiteMainLoader(true);
+            // ✅ Show loader area ends here
+
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                dataType: "json",
+                contentType: false, // Not to set any content header
+                processData: false, // Not to process data
+                data: fileData,
+                success: function (data) {
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+
+
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", data.message);
+
+                        setTimeout(function () {
+                            window.location.href = "@Url.Action("UsersBankAccounts","Accounts", new { langCode = Model?.PageBasicInfoObj?.langCode })";
+                        }, 1000);
+
+                    }
+                    else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showSuccessErrorMsg("error", "Error", "Something went wrong. Please try again");
+
+                    // ✅ Stop loader area starts here
+                    let LoaderTimeDuration = '@ConstantsHelper.SiteMainLoaderDuration()';
+                    setTimeout(function () {
+                        showHideSiteMainLoader(false);
+                    }, LoaderTimeDuration ?? 2000);
+                    // ✅ Stop loader area ends here
+                }
+            });
+
+        }
+
+
+        function GetStateProvinceByCountryId() {
+
+            let CountryId = $('#BankMasterId').find(':selected').attr('data_country_id')
+
+            if (!checkIfStringIsEmtpy(CountryId)) {
+                let emptyState = '<option value="">Select a State...</option>';
+                emptyState = emptyState + '<option value="-999">Other</option>';
+                $("#StateProvinceId").html(emptyState);
+
+                let emptyCity = '<option value="">Select a City...</option>';
+                emptyCity = emptyCity + '<option value="-999">Other</option>';
+                $("#CityId").html(emptyCity);
+                return false;
+            }
+
+            //--First make empty the drop downs of state and city
+            let emptyState = '<option value="">Select a State...</option>';
+            emptyState = emptyState + '<option value="-999">Other</option>';
+            $("#StateProvinceId").html(emptyState);
+
+
+            let emptyCity = '<option value="">Select a City...</option>';
+            emptyCity = emptyCity + '<option value="-999">Other</option>';
+            $("#CityId").html(emptyCity);
+
+            //--make form data
+            var formDate = {
+                CountryId: CountryId
+            }
+
+            let saveUrl = "@Url.Action("GetStateByCountryId", "UserManagement", new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "GET",
+                url: saveUrl,
+                data: formDate,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function (data) {
+
+                    if (data.success) {
+                        let s = '<option value="">Select a State...</option>';
+
+                        if (data.result != undefined && data.result.length > 0) {
+                            for (var i = 0; i < data.result.length; i++) {
+                                s += '<option value="' + data.result[i].displayValue + '">' + data.result[i].displayText + '</option>';
+
+                            }
+                            s = s + '<option value="-999">Other</option>';
+                            $("#StateProvinceId").html(s);
+                        } else {
+                            s = s + '<option value="-999">Other</option>';
+                            $("#StateProvinceId").html(s);
+                        }
+
+
+                    } else {
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+
+        }
+
+
+        function GetCityByStateId() {
+
+
+            let StateProvinceId = $('#StateProvinceId').val();
+
+            if (!checkIfStringIsEmtpy(StateProvinceId)) {
+                let emptyCity = '<option value="">Select a City...</option>';
+                emptyCity = emptyCity + '<option value="-999">Other</option>';
+                $("#CityId").html(emptyCity);
+                return false;
+            }
+
+            //--First make empty city
+            let emptyCity = '<option value="">Select a City...</option>';
+            emptyCity = emptyCity + '<option value="-999">Other</option>';
+            $("#CityId").html(emptyCity);
+
+            //--make form data
+            var formDate = {
+                StateProvinceId: StateProvinceId
+            }
+
+            let saveUrl = "@Url.Action("GetCityByStateId", "UserManagement", new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "GET",
+                url: saveUrl,
+                data: formDate,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function (data) {
+
+                    if (data.success) {
+
+                        let s = '<option value="">Select a City...</option>';
+
+                        if (data.result != undefined && data.result.length > 0) {
+                            for (var i = 0; i < data.result.length; i++) {
+                                s += '<option value="' + data.result[i].displayValue + '">' + data.result[i].displayText + '</option>';
+                            }
+                            s = s + '<option value="-999">Other</option>';
+                            $("#CityId").html(s);
+                        } else {
+                            s = s + '<option value="-999">Other</option>';
+                            $("#CityId").html(s);
+                        }
+
+
+
+                    } else {
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+
+        }
+
+
+
+        function DeleteUserBankAccountAttachment(thisParam, BankAccountAttachId, AttachmentURL) {
+            event.preventDefault();
+
+            let confirmClick = confirm('Do you really want to remove this record?');
+            if (confirmClick) {
+                var formData = {
+                    primarykeyValue: BankAccountAttachId,
+                    primaryKeyColumn: "BankAccountAttachId",
+                    tableName: "BankAccountAttachment",
+                    AttachmentURL: AttachmentURL,
+                    SqlDeleteType: "@((short)SqlDeleteTypes.ForeignKeyDelete)"
+
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("DeleteUserBankAccountAttachment", "Accounts", new { langCode = Model?.PageBasicInfoObj?.langCode })',
+                    data: formData,
+                    success: function (data) {
+
+                        if (data.success) {
+                            showSuccessErrorMsg("success", "Success", data.message);
+                            $(thisParam).closest('tr').remove();
+                        }
+                        else {
+
+                            showSuccessErrorMsg("error", "Error", "Something went wrong during saving of record");
+                        }
+
+
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+
+                        showSuccessErrorMsg("error", "Error", "An error occured. Please try again.");
+                    }
+                });
+
+
+            }
+
+        }
+
+    </script>
+
+}

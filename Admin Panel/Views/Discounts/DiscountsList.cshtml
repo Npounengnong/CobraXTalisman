@@ -1,0 +1,340 @@
+﻿@model Entities.MainModels.DiscountModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+}
+
+@{
+    List<SelectListItem> ActiveInactiveStatus = new List<SelectListItem>();
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "true", Text = "Active" });
+    ActiveInactiveStatus.Add(new SelectListItem { Value = "false", Text = "In Active" });
+
+    Dictionary<string, string>? IsActiveDropDown = new Dictionary<string, string>();
+    IsActiveDropDown = ActiveInactiveStatus.ToDictionary(v => v.Value, t => t.Text);
+
+    //--drop down area
+    Dictionary<string, string>? DiscountTypesIDs = new Dictionary<string, string>();
+    DiscountTypesIDs = Model != null && Model.DiscountTypeList != null && Model.DiscountTypeList.Count > 0 ?
+     Model.DiscountTypeList.Where(d => d.IsActive != null && d.IsActive == true).ToList().ToDictionary(v => v.DiscountTypeId.ToString(), t => t.DiscountTypeName) : null;
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                EntityId = Model?.PageBasicInfoObj != null ? Model.PageBasicInfoObj.EntityId : 0,
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = true,
+                AddNewButtonType = "OpenNewLink",
+                AddNewButtonNewLinkUrl = Url.Action("CreateNewDiscount", "Discounts", new { langCode = Model?.PageBasicInfoObj?.langCode }),
+                ShowActionsButton = true,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = true,
+                DataExportUrl = Url.Action("DiscountsList", "Discounts", new { langCode = Model?.PageBasicInfoObj?.langCode })
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @{
+                SearchFilterModel filter = new SearchFilterModel();
+
+                #region basic settings
+                filter.SearchJSFunctionName = "SearchRecord();";
+                filter.SearchButtonType = "button";
+                filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                filter.SearchURL = Url.Action("DiscountsList", "Discounts", new { langCode = Model?.PageBasicInfoObj?.langCode });
+                #endregion
+
+                filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+            new HtmlFormFieldsEntity(){ FieldID = "Title", FieldName="Title",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Title", LabelText="Title", ToolTipText="Enter here title of discount", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "CouponCode", FieldName="CouponCode",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Coupon Code", LabelText="Coupon Code", ToolTipText="Enter here coupon code for search", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "DiscountTypeId", FieldName="DiscountTypeId",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, DropdownSelectType=(short)HtmlDropdownSelectType.Select2  , PlaceHolderText="Select discount type", LabelText="Discount Type", ToolTipText="Select  discount type from the drop down", DropdownData=DiscountTypesIDs},
+            new HtmlFormFieldsEntity(){ FieldID = "FromDate", FieldName="FromDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="Start Date", LabelText="Start Date", ToolTipText="Pick a date from where the discount promotion starts", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ToDate", FieldName="ToDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="End Date", LabelText="End Date", ToolTipText="Pick the end date of discount promotion", DropdownData=null},
+
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/Discounts/PartialViews/_DiscountsList.cshtml", Model)
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+</div>
+
+
+
+<!-- Modals usage history starts here-->
+@{
+    HtmlBootstrapModalEntity htmlBootstrapModalEntityEdit = new HtmlBootstrapModalEntity();
+
+    htmlBootstrapModalEntityEdit.ModalTitle = "Discount Usage History";
+    htmlBootstrapModalEntityEdit.ModalDivId = "discount_usage_history_modal";
+    htmlBootstrapModalEntityEdit.SubmitBtnJsFunctionName = "";
+    htmlBootstrapModalEntityEdit.SubmitButtonText = "OK";
+    htmlBootstrapModalEntityEdit.ShowSubmitButton =false;
+    htmlBootstrapModalEntityEdit.FormId = "data-usage-history-form";
+    htmlBootstrapModalEntityEdit.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+    htmlBootstrapModalEntityEdit.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+
+     new HtmlFormFieldsEntity(){ FieldID = "MaximumQuantityHistory", FieldName="MaximumQuantityHistory",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Max Quantity", LabelText="Max Quantity", IsReadOnly=true },
+    new HtmlFormFieldsEntity(){ FieldID = "TotalUsageHistory", FieldName="TotalUsageHistory",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Total Usage", LabelText="Total Usage" , IsReadOnly=true},
+
+    };
+}
+
+@await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityEdit)
+
+<!-- /Modals usage history ends here-->
+@section  Scripts{
+
+    <script>
+
+        function SaveFormRecord() {
+
+            $("#data-insert-common-form").submit(function(e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-insert-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+
+            let ColorName = $('#ColorNameInsert').val();
+            let HexCode = $('#HexCodeInsert').val();
+            let IsActive = $('#IsActiveInsert').val();
+            let DisplaySeqNo = $('#DisplaySeqNoInsert').val();
+
+            if (!checkIfStringIsEmtpy(ColorName) || !checkIfStringIsEmtpy(HexCode)) {
+                showSuccessErrorMsg("error", "Error", "Please fill color and hex code fields!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(IsActive)) {
+                showSuccessErrorMsg("error", "Error", "Please fill status field!");
+                return false;
+            }
+
+
+            //--make form data
+            var formDate = {
+                ColorName: ColorName,
+                HexCode: HexCode,
+                IsActive: IsActive,
+                DisplaySeqNo: DisplaySeqNo,
+                DataOperationType: '@((short)DataOperationType.Insert)'
+            }
+
+            let saveUrl = "@Url.Action("SaveUpdateColor", "BasicData" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                data: formDate,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function(data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Saved Successfully!");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+
+        }
+
+        function UpdateFormRecord() {
+
+            $("#data-edit-common-form").submit(function(e) {
+                e.preventDefault();
+            });
+
+            if (!$("#data-edit-common-form").valid()) {
+                event.preventDefault();
+                return false;
+            }
+
+            let ColorId = $('#ColorIdUpdate').val();
+            let ColorName = $('#ColorNameUpdate').val();
+            let HexCode = $('#HexCodeUpdate').val();
+            let IsActive = $('#IsActiveUpdate').val();
+            let DisplaySeqNo = $('#DisplaySeqNoUpdate').val();
+
+            if (!checkIfStringIsEmtpy(ColorName) || !checkIfStringIsEmtpy(HexCode)) {
+                showSuccessErrorMsg("error", "Error", "Please fill color and hex code fields!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(IsActive)) {
+                showSuccessErrorMsg("error", "Error", "Please fill status field!");
+                return false;
+            }
+
+            if (!checkIfStringIsEmtpy(ColorId)) {
+                showSuccessErrorMsg("error", "Error", "ColorId is null!");
+                return false;
+            }
+
+
+            //--make form data
+            var formDate = {
+                ColorId: ColorId,
+                ColorName: ColorName,
+                HexCode: HexCode,
+                IsActive: IsActive,
+                DisplaySeqNo: DisplaySeqNo,
+                DataOperationType: '@((short)DataOperationType.Update)'
+            }
+
+
+            let saveUrl = "@Url.Action("SaveUpdateColor", "BasicData" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                data: formDate,
+                // datatype: "json",
+                cache: false,
+                async: false,
+
+                success: function(data) {
+                    console.log(data);
+                    if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Updated Successfully!");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    } else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                    }
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                }
+            })
+
+        }
+
+        function showEditModal(ColorID, ColorName, HexCode, IsActive, DisplaySeqNo) {
+
+            //--First empty the old values
+            $('#ColorIdUpdate').val("");
+            $('#ColorNameUpdate').val("");
+            $('#HexCodeUpdate').val("");
+
+
+            $('#ColorIdUpdate').val(ColorID);
+            $('#ColorNameUpdate').val(ColorName);
+            $('#HexCodeUpdate').val(HexCode);
+
+            if (IsActive != undefined && IsActive == 'True') {
+                $('#IsActiveUpdate').val('true');
+            } else {
+                $('#IsActiveUpdate').val('false');
+            }
+
+            $('#DisplaySeqNoUpdate').val(DisplaySeqNo);
+
+
+            $('#EditDataModal').modal('show');
+
+        }
+
+
+        function ShowDiscountUsageHistory(MaximumQuantityHistory, TotalUsageHistory) {
+
+            $('#MaximumQuantityHistory').val(MaximumQuantityHistory);
+            $('#TotalUsageHistory').val(TotalUsageHistory);
+
+            $('#discount_usage_history_modal').modal('show');
+        }
+
+    </script>
+
+}

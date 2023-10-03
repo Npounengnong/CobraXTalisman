@@ -1,0 +1,236 @@
+﻿@model Entities.MainModels.SalesModel
+
+@{
+    #region page basic info
+    ViewData["Title"] = Model?.PageBasicInfoObj?.PageTitle ?? "";
+    ViewData["EntityId"] = Model?.PageBasicInfoObj?.EntityId ?? 0;
+     
+    #endregion
+}
+
+@{
+
+
+    //--drop down area
+    Dictionary<string, string>? OrderStatusesDictionary = new Dictionary<string, string>();
+    Dictionary<string, string>? VendorsListDictionary = new Dictionary<string, string>();
+
+    OrderStatusesDictionary = Model?.OrderStatusesList?.Count() > 0 ?
+    Model.OrderStatusesList.ToDictionary(v => v.StatusId.ToString(), t => t.StatusName) : null;
+
+    VendorsListDictionary = Model?.VendorsList?.Count() > 0 ?
+           Model.VendorsList.ToDictionary(v => v.UserId.ToString(), t => (t.FirstName + " " + t.LastName)) : null;
+
+
+
+
+}
+
+<!-- Page header -->
+@{
+    PageHeader pageHeader = new PageHeader
+            {
+                PageTitle = Model?.PageBasicInfoObj?.PageTitle ?? "Page Info",
+                ShowAddNewButton = false,
+                AddNewButtonType = "OpenNewLink",
+                AddNewButtonNewLinkUrl = Url.Action("CreateNewProduct", "ProductsCatalog", new { langCode = Model?.PageBasicInfoObj?.langCode }),
+                ShowActionsButton = true,
+                ShowExportToPdfButton = false,
+                ShowExportToExcelButton = true,
+                DataExportUrl = Url.Action("OrdersList", "Sales", new { langCode = Model?.PageBasicInfoObj?.langCode })
+
+            };
+
+}
+@await Html.PartialAsync("~/Views/Common/_PageHeader.cshtml", pageHeader)
+<!-- /page header -->
+
+
+
+<div class="content">
+
+
+    <!-- Error Area -->
+    <div id="error-messages-area">
+        @{
+            SuccessErrorMsgEntity? successErrorMsgEntity = new SuccessErrorMsgEntity();
+            successErrorMsgEntity = Model?.SuccessErrorMsgEntityObj == null ? new SuccessErrorMsgEntity() : Model.SuccessErrorMsgEntityObj;
+        }
+
+        @await Html.PartialAsync("~/Views/Common/_SuccessErrorMsg.cshtml", successErrorMsgEntity)
+    </div>
+    <!-- /Error Area -->
+    <!-- Search Area Starts Here -->
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageSearchTitle.cshtml")
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <!-- Page search form -->
+            @{
+                SearchFilterModel filter = new SearchFilterModel();
+
+                #region basic settings
+                filter.SearchJSFunctionName = "SearchRecord();";
+                filter.SearchButtonType = "button";
+                filter.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+                filter.SearchURL = Url.Action("OrdersList", "Sales", new { langCode = Model?.PageBasicInfoObj?.langCode });
+                #endregion
+
+                filter.SearchFilterEntityList = new List<HtmlFormFieldsEntity>()
+            {
+            new HtmlFormFieldsEntity(){ FieldID = "OrderId", FieldName="OrderId",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Order Id", LabelText="Order Id", ToolTipText="Enter here the order id", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "CustomerName", FieldName="CustomerName",  FieldTypeID = (short)HTMLFieldTypeEnums.Search, PlaceHolderText="Customer Name", LabelText="Customer Name", ToolTipText="Enter here customer name", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ProductId", FieldName="ProductId",  FieldTypeID = (short)HTMLFieldTypeEnums.Number, PlaceHolderText="Product Id", LabelText="Product Id", ToolTipText="Enter here the product id", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "VendorId", FieldName="VendorId",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select vendor", LabelText="Vendor", ToolTipText="Select  vendor from the drop down", DropdownData=VendorsListDictionary},
+            new HtmlFormFieldsEntity(){ FieldID = "LatestStatusId", FieldName="LatestStatusId",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select status", LabelText="Order Status", ToolTipText="Select  status from the drop down", DropdownData=OrderStatusesDictionary},
+            new HtmlFormFieldsEntity(){ FieldID = "FromDate", FieldName="FromDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="From Date", LabelText="From Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+            new HtmlFormFieldsEntity(){ FieldID = "ToDate", FieldName="ToDate",  FieldTypeID = (short)HTMLFieldTypeEnums.Date, PlaceHolderText="To Date", LabelText="To Date", ToolTipText="Pick a date from where you want to search record", DropdownData=null},
+
+            };
+            }
+
+            @await Html.PartialAsync("~/Views/Common/_SearchFilter.cshtml", filter)
+            <!-- /page search form -->
+
+
+        </div>
+    </div>
+    <!-- Search Area Ends Here -->
+
+    <div class="card border-left-3 border-left-slate">
+        <div class="card-header header-elements-inline">
+            @await Html.PartialAsync("~/Views/Common/PartialViews/_PageGridTitle.cshtml", Model?.PageBasicInfoObj)
+            <div class="header-elements">
+                <div class="list-icons">
+                    <a class="list-icons-item" data-action="collapse"></a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-lg-12 col-md-12">
+
+                    <div class="table-responsive" id="main_data_table">
+                        @await Html.PartialAsync("~/Views/Sales/PartialViews/_OrdersList.cshtml", Model)
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+    <!-- Modals area Edit starts here-->
+    @{
+        HtmlBootstrapModalEntity htmlBootstrapModalEntityEdit = new HtmlBootstrapModalEntity();
+
+        htmlBootstrapModalEntityEdit.ModalTitle = "Update Order Status";
+        htmlBootstrapModalEntityEdit.ModalDivId = "EditStatusDataModal";
+        htmlBootstrapModalEntityEdit.SubmitBtnJsFunctionName = "UpdateOrderStatus();";
+        htmlBootstrapModalEntityEdit.SubmitButtonText = "Update";
+        htmlBootstrapModalEntityEdit.FormId = "data-edit-common-form";
+        htmlBootstrapModalEntityEdit.ModalSizeType = (short)HtmlBootsrapModalTypes.Medium;
+
+
+        htmlBootstrapModalEntityEdit.htmlFormFieldsEntities = new List<HtmlFormFieldsEntity>()
+    {
+    new HtmlFormFieldsEntity(){ FieldID = "LatestStatusIdUpdate", FieldName="LatestStatusIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Dropdown, PlaceHolderText="Select Status", LabelText="Order Status", IsRequired=true,DropdownSelectType = (short)HtmlDropdownSelectType.Simple ,  DropdownData=OrderStatusesDictionary},
+    new HtmlFormFieldsEntity(){ FieldID = "OrderIdUpdate", FieldName="OrderIdUpdate",  FieldTypeID = (short)HTMLFieldTypeEnums.Hidden},
+
+    };
+    }
+
+    @await Html.PartialAsync("~/Views/Common/_BootstrapFormModal.cshtml", htmlBootstrapModalEntityEdit)
+
+    <!-- /Modals area Edit ends here-->
+
+
+
+
+
+</div>
+@section  Scripts{
+
+    <script>
+
+
+        function OpenOrderChangeStatusModel(OrderId, LatestStatusId) {
+            //--First empty the old values
+            $('#OrderIdUpdate').val("");
+            $('#LatestStatusIdUpdate').val("");
+
+
+            $('#OrderIdUpdate').val(OrderId);
+            $('#LatestStatusIdUpdate').val(LatestStatusId);
+
+
+            $('#EditStatusDataModal').modal('show');
+        }
+
+
+        function UpdateOrderStatus() {
+            event.preventDefault();
+
+            debugger
+
+            let OrderId = $('#OrderIdUpdate').val();
+            let LatestStatusId = $('#LatestStatusIdUpdate').val();
+
+
+            var formDate = {
+                OrderId: OrderId ,
+                LatestStatusId : LatestStatusId
+            }
+
+            let saveUrl = "@Url.Action("UpdateOrderStatus", "Sales" , new { langCode = Model?.PageBasicInfoObj?.langCode })";
+
+            $.ajax({
+                type: "POST",
+                url: saveUrl,
+                // dataType: "json",
+                // contentType: false, // Not to set any content header
+                // processData: false, // Not to process data
+                cache: false,
+                async: false,
+                data: formDate,
+                success: function(data) {
+
+                   if (data.success) {
+                        showSuccessErrorMsg("success", "Success", "Updated Successfully!");
+                         $('#EditStatusDataModal').modal('hide');
+                       SearchRecord();
+
+                    } else {
+
+                        showSuccessErrorMsg("error", "Error", data.message ?? "An error occured. Please try again!");
+                         $('#EditStatusDataModal').modal('hide');
+                    }
+
+                },
+                error: function(xhr, ajaxOptions, thrownError) {
+                    showSuccessErrorMsg("error", "Error", "An error occured. Please try again!");
+                     $('#EditStatusDataModal').modal('hide');
+                }
+            })
+
+
+        }
+
+    </script>
+
+}

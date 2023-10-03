@@ -1,0 +1,103 @@
+﻿@model Entities.MainModels.DiscountModel
+
+
+@await Html.PartialAsync("~/Views/Common/_DataTableLength.cshtml")
+
+<table class="table site-table-listing">
+    <thead>
+        <tr>
+            <th id="lbl_hdr_prdSelect"> Select</th>
+            <th id="lbl_hdr_prdIdDiscnt"> Product ID</th>
+            <th id="lbl_hdr_prdNameDiscnt"> Name</th>
+            <th id="lbl_hdr_prdPriceDiscnt"> Price</th>
+
+
+            <th id="lbl_hdr_prdCreatedOnDiscnt"> Created On</th>
+
+
+
+        </tr>
+    </thead>
+    <tbody>
+
+        @{
+            if (Model != null && Model.ProductsList != null && Model.ProductsList.Count > 0)
+            {
+                foreach (var item in Model.ProductsList)
+                {
+                    <tr>
+                        <td>
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input type="checkbox" data_product_id="@item.ProductId" data_product_name="@item.ProductName" onclick="AddSelectedCheckProductToDiscountList(this)" class="form-check-input-styled-info">
+
+                                </label>
+                            </div>
+                        </td>
+                        <td><span class="text-dark">@item.ProductId</span></td>
+
+
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div>
+                                    <a href="#" class="text-default font-weight-semibold">@item.ProductName</a>
+
+                                </div>
+                            </div>
+                        </td>
+
+
+                        <td>@(item.Price)</td>
+
+
+
+
+
+                        <td><span class="text-dark">@(item.CreatedOn.ToString("dd MMM, yyyy"))</span></td>
+
+
+
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="text-center" colspan="20"><b>  No record found </b></td>
+
+                </tr>
+            }
+        }
+
+
+
+
+    </tbody>
+</table>
+
+
+
+<div class="row" id="pagination_div">
+
+    @{
+        if (Model != null && Model.pageHelperObj != null)
+        {
+            PagerHelper ph = new PagerHelper();
+            ph.CurrentPage = Model.pageHelperObj.CurrentPage;
+            ph.TotalRecords = Model.pageHelperObj.TotalRecords;
+            ph.RecordsPerPage = Model.pageHelperObj.RecordsPerPage;
+            ph.EntityId = Model?.PageBasicInfoObj?.EntityId ?? 0;
+            ph.PageUrl = Url.Action("ShowAllProductsForDiscount", "Discounts", new { langCode = Model?.PageBasicInfoObj?.langCode });
+
+            ph.AjaxEnabled = true;
+            ph.OnClientClickAjaxCall = "PaginationAfterAjax(this)";
+
+            @await Html.PartialAsync("~/Views/Common/_Pager.cshtml", ph)
+        }
+
+    }
+
+
+</div>
+
+

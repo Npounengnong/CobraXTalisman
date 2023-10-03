@@ -1,0 +1,48 @@
+﻿@model Entities.MainModels.SalesModel
+
+<!-- Full width modal -->
+<div id="modal_order_variants" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header site-bg-modal-header">
+                <h5 class="modal-title" id="lbl_modal_products_title">Order Item Variants</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+				<div class="row">
+
+					@{
+						if (Model?.OrderVariantsList!=null)
+						{
+							foreach (var item in Model.OrderVariantsList)
+							{
+								<div class="col-md-6">
+									<div class="mb-3">
+										<h6 class="font-weight-semibold mt-2"><i class="fab fa-microsoft mr-2"></i>  <span class="ml-1" id="lbl_attr_display_nme">@item.AttributeDisplayName</span></h6>
+										<div class="dropdown-divider mb-2"></div>
+										<a href="#" class="dropdown-item">
+											<i class="far fa-arrow-alt-circle-right"></i>  <span id="lbl_attr_value">@item.PrimaryKeyDisplayText</span>
+										</a>
+
+									</div>
+								</div>
+							}
+						}
+						
+					}
+
+
+
+
+				
+				</div>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
+<!-- /full width modal -->

@@ -1,0 +1,33 @@
+﻿@model Entities.CommonModels.SuccessErrorMsgEntity
+
+
+
+@{
+    if (Model != null && Model != null)
+    {
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                @if (!String.IsNullOrWhiteSpace(Model.SuccessMsg))
+                {
+ 
+                        <div class="alert alert-success alert-styled-left alert-arrow-left alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert"><span>×</span></button>
+                            <span class="font-weight-semibold">@Model.SuccessMsg </span>
+                        </div>
+                   
+                }
+               @if (!String.IsNullOrWhiteSpace(Model.ErrorMsg))
+                {
+
+                        <div class="alert alert-danger alert-styled-left alert-dismissible">
+                            <button type="button" class="close" data-dismiss="alert"><span>×</span></button>
+                            <span class="font-weight-semibold">@Model.ErrorMsg</span>
+                        </div>
+                   
+                }
+            </div>
+        </div>
+    }
+}
+
+
